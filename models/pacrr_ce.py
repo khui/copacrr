@@ -13,7 +13,7 @@ class PACRR(MODEL_BASE):
                                          'qproximity', 'context', 'shuffle', 'xfilters', 'cascade']
 
     def __init__(self, *args, **kwargs):
-        super(PACRRSM, self).__init__(*args, **kwargs)
+        super(PACRR, self).__init__(*args, **kwargs)
         self.NGRAM_NFILTER, _ = get_ngram_nfilter(self.p['winlen'], self.p['qproximity'],
                                                   self.p['maxqlen'], self.p['xfilters'])
         self.NGRAMS = sorted(self.NGRAM_NFILTER.keys())
