@@ -5,6 +5,7 @@ This is a Keras (TensorFlow) implementation of the model described in:
 Kai Hui, Andrew Yates, Klaus Berberich, Gerard de Melo.
 [PACRR: A Position-Aware Neural IR Model for Relevance Matching](https://arxiv.org/pdf/1704.03940.pdf).
 *In EMNLP, 2017.*
+
 Kai Hui, Andrew Yates, Klaus Berberich, Gerard de Melo.
 [RE-PACRR: A Context and Density-Aware Neural Information Retrieval Model](https://arxiv.org/pdf/1706.10192.pdf).
 *In Neu-IR workshop, 2017.*
