@@ -33,9 +33,12 @@ published soon.
 
 ### Install Required Packages
 
-First install with Anaconda (Recommended)
+First install with Anaconda (Recommended).
+
 * **Anaconda** ([instructions](https://www.continuum.io/downloads))
+
 Thereafter install tensorflow and keras on Anaconda.
+
 * **TensorFlow** ([instructions](https://www.tensorflow.org/install/))
 * **Keras** ([instructions](https://keras.io/#installation))
 
