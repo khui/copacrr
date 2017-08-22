@@ -20,7 +20,6 @@ Kai Hui, Andrew Yates, Klaus Berberich, Gerard de Melo.
 * [Model Overview](#model-overview)
 * [Getting Started](#getting-started)
     * [Install Required Packages](#install-required-packages)
-    * [Download Pretrained Models on ClueWeb](#download-pretrained-models-clueweb)
 
 ## Model overview
 
@@ -42,5 +41,3 @@ Thereafter install tensorflow and keras on Anaconda.
 * **TensorFlow** ([instructions](https://www.tensorflow.org/install/))
 * **Keras** ([instructions](https://keras.io/#installation))
 
-
-### Download Pretrained Models on ClueWeb
