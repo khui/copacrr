@@ -1,14 +1,13 @@
-from keras.models import Model
+from keras.models import Sequential, Model
 from keras.layers.convolutional import Conv2D
 from keras.layers.pooling import MaxPooling2D
-from keras.layers import Activation, Permute, Dense, Flatten, Input, Lambda, Reshape
+from keras.layers import Activation, Permute, Dense, Dropout, Embedding, \
+Flatten, Input, merge, Lambda, Reshape
 from keras import backend
 import tensorflow as tf
 backend.clear_session()
 
-# map the file name of the model_file_name.py to the model class name
-file2name={'pacrr_ce':'PACRR'}
-name2file = {v: k for k, v in file2name.items()}
+from utils.config import file2name, name2file
 
 _boolstr = lambda x: x.lower() == 'true'
 _nonestr = lambda x: None if x == 'None' else x
@@ -18,6 +17,8 @@ param_types = {'distill': str, 'xfilters': str, 'cascade': str,
 
 
 class MODEL_BASE:
+    #TODO dont print some of the opts when they match default value? eg maxqlen,epochs,nsamples
+    #TODO epochs and nsamples could be moved to pipeline params, if that makes sense
     common_params = ['simdim', 'epochs', 'nsamples', 'maxqlen', 'binmat', 'numneg', 'batch', 'ud', 'ut']
 
     def params_to_string(self, params, skip_check=False):
@@ -35,15 +36,20 @@ class MODEL_BASE:
 
         s = "_".join(s)
 
+        #ps = self.string_to_params(s, True)
         if not skip_check:
             if params != self.string_to_params(s, True):
                 d = self.string_to_params(s, True)
                 for k, v in d.items():
                     if k not in params or params.get(k) != v:
                         print("%s k=%s vs. k=%s" % (k, params.get(k), d[k]))
+                        print(type(params.get(k)), type(d[k]))
                 for k, v in params.items():
                     if k not in d or d.get(k) != v:
                         print("%s k=%s vs. k=%s" % (k, params[k], d.get(k)))
+                        print(type(params[k]), type(d.get(k)))
+                print("dict:", sorted(d.items()))
+                print(" str:", s)
                 raise RuntimeError("self.string_to_params(s, True)")
         return s
 
@@ -75,6 +81,15 @@ class MODEL_BASE:
     def __init__(self, p, rnd_seed):
         self.p = p
         self.rnd_seed = rnd_seed
+
+        #TODO fix seeding. I think this can be done by moving set_random_seed to before Keras is impiorted
+        # https://github.com/fchollet/keras/issues/2280
+        # if len(tf.get_default_graph()._nodes_by_id.keys()) > 0:
+        #     raise RuntimeError("Seeding is not supported after building part of the graph. "
+        #                         "Please move set_seed to the beginning of your code.")
+        # tf.set_random_seed(self.rnd_seed)
+        # sess = tf.Session()
+        # backend.set_session(sess)
     
     def pos_softmax(self, pos_neg_scores):
         exp_pos_neg_scores = [tf.exp(s) for s in pos_neg_scores]
@@ -87,6 +102,8 @@ class MODEL_BASE:
     def _kmax_context(self, inputs, top_k):
         x, context_input = inputs
         vals, idxs = tf.nn.top_k(x, k=top_k, sorted=True)
+        # hack that requires the context to have the same shape as similarity matrices
+        # https://stackoverflow.com/questions/41897212/how-to-sort-a-multi-dimensional-tensor-using-the-returned-indices-of-tf-nn-top-k
         shape = tf.shape(x)
         mg = tf.meshgrid(*[tf.range(d) for d in (tf.unstack(shape[:(x.get_shape().ndims - 1)]) + [top_k])], indexing='ij')
         val_contexts = tf.gather_nd(context_input, tf.stack(mg[:-1] + [idxs], axis=-1))
@@ -107,6 +124,8 @@ class MODEL_BASE:
             idxes.append(idx)
         concat_topk_max = tf.concat(topk_vs, -1, name='concat_val')
         concat_topk_idx = tf.concat(idxes, -1, name='concat_idx')
+        # hack that requires the context to have the same shape as similarity matrices
+        # https://stackoverflow.com/questions/41897212/how-to-sort-a-multi-dimensional-tensor-using-the-returned-indices-of-tf-nn-top-k
         shape = tf.shape(x)
         mg = tf.meshgrid(*[tf.range(d) for d in (tf.unstack(shape[:(x.get_shape().ndims - 1)]) + [top_k*len(poses)])], indexing='ij')
         val_contexts = tf.gather_nd(context_input, tf.stack(mg[:-1] + [concat_topk_idx], axis=-1))
