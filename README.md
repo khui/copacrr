@@ -42,11 +42,17 @@ Thereafter install tensorflow and keras on Anaconda.
 * **Keras** ([instructions](https://keras.io/#installation))
 
 
-## Preparation: word2vec and similarity matrices (TODO)
+## Preparation: word2vec and similarity matrices
 
-### Prepare the word vectors for all doc terms
+### Prepare the word vectors for all doc terms (Optional)
 
 ### Prepare the similarity matrices between individual (q, d) pairs
+
+Download and unpack 
+the [similarity matrices](https://drive.google.com/file/d/0B3FrsWe6Y5YqdEtfSjI4N0h1LXM/view?usp=sharing) 
+for clueweb as described in PACRR and RE-PACRR. 
+
+tar xvf simmat.tar.gz
 
 ## Usage: train, predict and evaluation
 
