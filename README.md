@@ -41,3 +41,56 @@ Thereafter install tensorflow and keras on Anaconda.
 * **TensorFlow** ([instructions](https://www.tensorflow.org/install/))
 * **Keras** ([instructions](https://keras.io/#installation))
 
+
+## Preparation: word2vec and similarity matrices (TODO)
+
+### Prepare the word vectors for all doc terms
+
+### Prepare the similarity matrices between individual (q, d) pairs
+
+## Usage: train, predict and evaluation
+
+Configure the $parentdir in *.sh as the root directory for all outputs.
+
+Configure the sim_dir in utils/config.py, holding the similarity matrices.
+
+### Train
+
+python -m train_model with expname=$expname train_years=$train_years {param_name=param_val}
+
+or use the script
+
+bash bin/train_model.sh
+
+Configure different parameters in train.sh or utils/config.py
+
+### Predict
+
+python -m pred_per_epoch with expname=$expname train_years=$train_years test_year=$test_year {param_name=param_val}
+
+or use the script
+
+bash bin/pred_per_epoch.sh
+
+Configure different parameters in pred_per_epoch.sh or utils/config.py
+
+
+### Evaluation
+
+Evaluate the prediction over the three benchmarks as described in our RE-PACRR paper. Note that 
+for Rerank-ALL benchmark one needs to dump [all trec-runs](http://trec.nist.gov/results/) 
+and their corresponding evaluation results
+under data/trec_runs and data/eval_trec_runs respectively.
+
+python -m evals.docpairs with expname=$expname train_years=$train_years {param_name=param_val}
+
+python -m evals.rerank with expname=$expname train_years=$train_years {param_name=param_val}
+
+or use the script
+
+bash bin/evals.sh
+
+Configure different parameters in evals.sh or utils/config.py
+
+
+
