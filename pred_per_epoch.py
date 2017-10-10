@@ -53,10 +53,10 @@ def plot_curve(epoch_err_ndcg_loss, outdir, plot_id, p):
     plt.close()
 
 
-def eval_run(qid_cwid_pred, expid, perlf, treceval, tmp_dir, k, qrelf):
+def eval_run(_log, qid_cwid_pred, expid, perlf, treceval, tmp_dir, k, qrelf):
     for qid in qid_cwid_pred:
         sorted_cwids = sorted(list(qid_cwid_pred[qid].keys()), key=lambda d:-qid_cwid_pred[qid][d])
-        with tempfile.NamedTemporaryFile(mode='w', delete=True) as tmpf,\
+        with tempfile.NamedTemporaryFile(mode='w', delete=True, dir=tmp_dir) as tmpf,\
                 open(os.path.join(tmp_dir, 'tmperr.f'),'a+') as errf:
             for qid in sorted(qid_cwid_pred):
                 rank = 1
@@ -185,7 +185,7 @@ def pred(_log, _config):
             continue
         weight_file = os.path.join(weight_dir, f)
         qid_cwid_pred = model_pred(NGRAM_NFILTER, weight_file, test_doc_vec, test_docids, test_qids)
-        ndcg20, err20, mapv = eval_run(qid_cwid_pred, expid, perlf, treceval, tmp_dir, topk4eval, qrelf)
+        ndcg20, err20, mapv = eval_run(_log, qid_cwid_pred, expid, perlf, treceval, tmp_dir, topk4eval, qrelf)
         loss = int(loss)
         out_name = '%d_%0.4f_%0.4f_%0.4f_%d.run' % (nb_epoch, ndcg20, mapv, err20, loss)
         epoch_err_ndcg_loss.append((nb_epoch, err20, ndcg20, mapv, loss))

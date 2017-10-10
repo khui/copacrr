@@ -17,8 +17,9 @@ context=False
 combine=16
 iterations=10
 shuffle=False
-parentdir=/GW/D5data-2/khui/results/pacrrpub
+parentdir=/local/var/$USER/pacrr
 outdir=$parentdir
+
 
 python -m pred_per_epoch with\
 	expname=$expname \

@@ -5,9 +5,10 @@ import os
 import sys
 import time
 all_years = ['09', '10', '11', '12', '13', '14']
-train_test_years = {'wt' + '_'.join(sorted(years)):
-        sorted(['wt' + ty for ty in all_years if ty not in years])
-        for years in itertools.combinations(all_years, 4)}
+train_test_years = {'wt12_13':['wt11', 'wt14']}
+#train_test_years = {'wt' + '_'.join(sorted(years)):
+#        sorted(['wt' + ty for ty in all_years if ty not in years])
+#        for years in itertools.combinations(all_years, 4)}
 
 
 # modelfile-modelname
@@ -24,7 +25,6 @@ param2acronym=(('POS_METHOD',''), ('BINARY',''), ('QPROXIMITY', 'qp'), \
 
 
 
-parentdir='/GW/D5data-7/%s/results/axiomatic'%(getpass.getuser())
 # concat of different qrel from trec
 # please download from http://trec.nist.gov/data/webmain.html
 # for instance: http://trec.nist.gov/data/web/2014/qrels.adhoc.txt
@@ -56,7 +56,10 @@ like:
 rawdoc_mat_dir/query_idf/desc_term_idf/1.npy
 rawdoc_mat_dir/query_idf/topic_term_idf/1.npy
 '''
-rawdoc_mat_dir="/directory to the pre-computed similarity matrices/"
+# the directory helds the similarity matrices 
+sim_dir="/local/var/tmp/%s" % getpass.getuser()
+rawdoc_mat_dir=os.path.join(sim_dir, 'cosine')
+#"/directory to the pre-computed similarity matrices/"
 # the mat for the context needs to be pre-computed if context=True
 contextdir = None
 if contextdir is None:
@@ -64,9 +67,9 @@ if contextdir is None:
 
 # following filename is used in evals/*.py
 # all runs from trec for the rerank-simple and rerank-all benchmarks 
-trec_run_basedir=''
+trec_run_basedir=os.path.join(cur_dir, "data", "trec_runs")
 # the evaluation results for all origial runs 
-eval_trec_run_basedir=''
+eval_trec_run_basedir=os.path.join(cur_dir, "data", "eval_trec_runs")
 
 
 
