@@ -32,7 +32,7 @@ published soon.
 
 ### Install Required Packages
 
-First install with Anaconda (Recommended).
+First install Anaconda (Recommended).
 
 * **Anaconda** ([instructions](https://www.continuum.io/downloads))
 
@@ -40,6 +40,8 @@ Thereafter install tensorflow and keras on Anaconda.
 
 * **TensorFlow** ([instructions](https://www.tensorflow.org/install/))
 * **Keras** ([instructions](https://keras.io/#installation))
+* **numpy** and **scipy** ([instructions](https://www.scipy.org/install.html))
+* **sacred** ([instruction](http://sacred.readthedocs.io/en/latest/quickstart.html#installation))
 
 
 ## Preparation: word2vec and similarity matrices
