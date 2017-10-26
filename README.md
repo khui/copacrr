@@ -71,21 +71,21 @@ Configure the sim_dir in utils/config.py, holding the similarity matrices.
 
 ### Train
 
-python -m train_model with expname=$expname train_years=$train_years {param_name=param_val}
+   python -m train_model with expname=$expname train_years=$train_years {param_name=param_val}
 
 or use the script
 
-bash bin/train_model.sh
+   bash bin/train_model.sh
 
 Configure different parameters in train.sh or utils/config.py
 
 ### Predict
 
-python -m pred_per_epoch with expname=$expname train_years=$train_years test_year=$test_year {param_name=param_val}
+    python -m pred_per_epoch with expname=$expname train_years=$train_years test_year=$test_year {param_name=param_val}
 
 or use the script
 
-bash bin/pred_per_epoch.sh
+    bash bin/pred_per_epoch.sh
 
 Configure different parameters in pred_per_epoch.sh or utils/config.py
 
@@ -97,13 +97,13 @@ for Rerank-ALL benchmark one needs to dump [all trec-runs](http://trec.nist.gov/
 and their corresponding evaluation results
 under data/trec_runs and data/eval_trec_runs respectively.
 
-python -m evals.docpairs with expname=$expname train_years=$train_years {param_name=param_val}
+    python -m evals.docpairs with expname=$expname train_years=$train_years {param_name=param_val}
 
-python -m evals.rerank with expname=$expname train_years=$train_years {param_name=param_val}
+    python -m evals.rerank with expname=$expname train_years=$train_years {param_name=param_val}
 
 or use the script
 
-bash bin/evals.sh
+    bash bin/evals.sh
 
 Configure different parameters in evals.sh or utils/config.py
 
