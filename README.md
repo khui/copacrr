@@ -71,11 +71,11 @@ Configure the sim_dir in utils/config.py, holding the similarity matrices.
 
 ### Train
 
-   python -m train_model with expname=$expname train_years=$train_years {param_name=param_val}
+    python -m train_model with expname=$expname train_years=$train_years {param_name=param_val}
 
 or use the script
 
-   bash bin/train_model.sh
+    bash bin/train_model.sh
 
 Configure different parameters in train.sh or utils/config.py
 
