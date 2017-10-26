@@ -46,15 +46,22 @@ Thereafter install tensorflow and keras on Anaconda.
 
 ## Preparation: word2vec and similarity matrices
 
-### Prepare the word vectors for all doc terms (Optional)
+The preprocessing is to generate a simmilarity matrix for individual query-document pairs. 
 
-### Prepare the similarity matrices between individual (q, d) pairs
+There are two phases:
 
-Download and unpack 
-the [similarity matrices](https://drive.google.com/file/d/0B3FrsWe6Y5YqdEtfSjI4N0h1LXM/view?usp=sharing) 
+1) Extract the text from warc;
+
+2) Prepare the word embedding for individual terms in the query and docs, by using a pre-trained word2vec corpus.One needs to make up the missing vectors for the terms that are not included in the pre-trained word2vec. In the preprocess/wordembedding directory, the train_w2v.py makes up the missing ones by keep training the word2vec meanwhile fixing the vectors that are presented already;
+
+3) the computation of the similarity matrices for individual query-doc pairs (not included in the code)
+
+At this moment, we include the pre-computed simmilarity matrices in the followings. One could download and unpack the [similarity matrices](https://drive.google.com/file/d/0B3FrsWe6Y5YqdEtfSjI4N0h1LXM/view?usp=sharing) 
 for clueweb as described in PACRR and RE-PACRR. 
 
-tar xvf simmat.tar.gz
+run the following:
+
+       tar xvf simmat.tar.gz
 
 ## Usage: train, predict and evaluation
 
