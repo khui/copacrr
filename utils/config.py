@@ -5,10 +5,10 @@ import os
 import sys
 import time
 all_years = ['09', '10', '11', '12', '13', '14']
-train_test_years = {'wt12_13':['wt11', 'wt14']}
-#train_test_years = {'wt' + '_'.join(sorted(years)):
-#        sorted(['wt' + ty for ty in all_years if ty not in years])
-#        for years in itertools.combinations(all_years, 4)}
+#train_test_years = {'wt12_13':['wt11', 'wt14']}
+train_test_years = {'wt' + '_'.join(sorted(years)):
+        sorted(['wt' + ty for ty in all_years if ty not in years])
+        for years in itertools.combinations(all_years, 4)}
 
 
 # modelfile-modelname
