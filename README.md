@@ -115,13 +115,13 @@ If you use the code, please cite the following papers:
 
 ### PACRR
 ```
-   @inproceedings{hui2017pacrr,
-     title={PACRR: A Position-Aware Neural IR Model for Relevance Matching},
-     author={Hui, Kai and Yates, Andrew and Berberich, Klaus and de Melo, Gerard},
-     booktitle={Proceedings of the 2017 Conference on Empirical Methods in Natural Language Processing},
-     pages={1060--1069},
-     year={2017}
-   }
+@inproceedings{hui2017pacrr,
+  title={PACRR: A Position-Aware Neural IR Model for Relevance Matching},
+  author={Hui, Kai and Yates, Andrew and Berberich, Klaus and de Melo, Gerard},
+  booktitle={Proceedings of the 2017 Conference on Empirical Methods in Natural Language Processing},
+  pages={1060--1069},
+  year={2017}
+}
 ```
 
 ### RE-PACRR
