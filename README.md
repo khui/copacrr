@@ -16,10 +16,6 @@ Kai Hui, Andrew Yates, Klaus Berberich, Gerard de Melo.
 
 ***Pull requests and issues:*** @khui @andrewyates
 
-## Contents
-* [Model Overview](#model-overview)
-* [Getting Started](#getting-started)
-    * [Install Required Packages](#install-required-packages)
 
 ## Model overview
 
@@ -112,6 +108,18 @@ or use the script
     bash bin/evals.sh
 
 Configure different parameters in evals.sh or utils/config.py
+
+## Citation
+
+   @inproceedings{huiyates2017pacrr,
+     title={PACRR: A Position-Aware Neural IR Model for Relevance Matching},
+     author={Hui, Kai and Yates, Andrew and Berberich, Klaus and de Melo, Gerard},
+     booktitle={Proceedings of the 2017 Conference on Empirical Methods in Natural Language Processing},
+     pages={1060--1069},
+     year={2017}
+   }
+
+
 
 
 
