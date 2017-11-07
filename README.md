@@ -56,9 +56,9 @@ At this moment, we include the pre-computed simmilarity matrices in the followin
 for clueweb as described in PACRR and RE-PACRR. 
 
 run the following:
-
+```
        tar xvf simmat.tar.gz
-
+```
 ## Usage: train, predict and evaluation
 
 Configure the $parentdir in *.sh as the root directory for all outputs.
@@ -111,14 +111,28 @@ Configure different parameters in evals.sh or utils/config.py
 
 ## Citation
 
-   @inproceedings{huiyates2017pacrr,
+If you use the code, please cite the following papers: 
+
+### PACRR
+```
+   @inproceedings{hui2017pacrr,
      title={PACRR: A Position-Aware Neural IR Model for Relevance Matching},
      author={Hui, Kai and Yates, Andrew and Berberich, Klaus and de Melo, Gerard},
      booktitle={Proceedings of the 2017 Conference on Empirical Methods in Natural Language Processing},
      pages={1060--1069},
      year={2017}
    }
+```
 
+### RE-PACRR
+```
+@inproceedings{hui2017re,
+  title={RE-PACRR: A Context and Density-Aware Neural Information Retrieval Model},
+  author={Hui, Kai and Yates, Andrew and Berberich, Klaus and de Melo, Gerard},
+  booktitle={The SIGIR 2017 Workshop on Neural Information Retrieval},
+  year={2017}
+}
+```
 
 
 
