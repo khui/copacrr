@@ -97,6 +97,12 @@ for Rerank-ALL benchmark one needs to dump [all trec-runs](http://trec.nist.gov/
 and their corresponding evaluation results
 under data/trec_runs and data/eval_trec_runs respectively.
 
+The evaluation code strictly corresponds to the exp reported in PACRR and REPACRR papers, but one could 
+easily develop evaluation pipeline for different dataset or even different benchmarks based on the code. For example, the 
+usage of the six years' Web Track for training/validation/test
+is hard coded in the train_test_years in utils/config.py, and one needs
+to edit it when fewer years are used.
+
     python -m evals.docpairs with expname=$expname train_years=$train_years {param_name=param_val}
 
     python -m evals.rerank with expname=$expname train_years=$train_years {param_name=param_val}
