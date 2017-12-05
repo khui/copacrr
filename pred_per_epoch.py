@@ -53,24 +53,22 @@ def plot_curve(epoch_err_ndcg_loss, outdir, plot_id, p):
     plt.close()
 
 
-def eval_run(_log, qid_cwid_pred, expid, perlf, treceval, tmp_dir, k, qrelf):
-    for qid in qid_cwid_pred:
-        sorted_cwids = sorted(list(qid_cwid_pred[qid].keys()), key=lambda d:-qid_cwid_pred[qid][d])
-        with tempfile.NamedTemporaryFile(mode='w', delete=True, dir=tmp_dir) as tmpf,\
-                open(os.path.join(tmp_dir, 'tmperr.f'),'a+') as errf:
-            for qid in sorted(qid_cwid_pred):
-                rank = 1
-                for cwid in sorted(qid_cwid_pred[qid], key=lambda d:-qid_cwid_pred[qid][d]):
-                    tmpf.write('%d Q0 %s %d %.10e %s\n'%(qid, cwid, rank, qid_cwid_pred[qid][cwid], expid))
-                    rank += 1 
-            tmpf.flush()
-            run2eval = tmpf.name
-            try:
-                val_res = subprocess.check_output([perlf, '-k','%d'%k, qrelf, run2eval], stderr=errf).decode('utf-8')
-                map_res = subprocess.check_output([treceval, '-m','map', qrelf, run2eval], stderr=errf).decode('utf-8')
-            except subprocess.CalledProcessError as e:
-                _log.error(e)
-                exit(1)
+def eval_run(_log, qid_cwid_pred, expid, perlf, treceval, tmp_dir, k, qrelf):		
+    with tempfile.NamedTemporaryFile(mode='w', delete=True, dir=tmp_dir) as tmpf,\
+            open(os.path.join(tmp_dir, 'tmperr.f'),'a+') as errf:
+        for qid in sorted(qid_cwid_pred):
+            rank = 1
+            for cwid in sorted(qid_cwid_pred[qid], key=lambda d:-qid_cwid_pred[qid][d]):
+                tmpf.write('%d Q0 %s %d %.10e %s\n'%(qid, cwid, rank, qid_cwid_pred[qid][cwid], expid))
+                rank += 1 
+        tmpf.flush()
+        run2eval = tmpf.name
+        try:
+            val_res = subprocess.check_output([perlf, '-k','%d'%k, qrelf, run2eval], stderr=errf).decode('utf-8')
+            map_res = subprocess.check_output([treceval, '-m','map', qrelf, run2eval], stderr=errf).decode('utf-8')
+        except subprocess.CalledProcessError as e:
+            _log.error(e)
+            exit(1)
     amean_line = val_res.splitlines()[-1]
     mapval = map_res.split()[-1]
     if 'amean' not in amean_line:
