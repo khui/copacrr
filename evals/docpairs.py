@@ -9,66 +9,6 @@ import matplotlib.pyplot as plt
 from pandas import DataFrame as df
 import logging, warnings
 
-def create_docpairs(qid_cwid_label, test_qids, qid_year, jud_label, label_jud, year_label_jud):
-    year_pkey_docpairs = dict()
-    for qid in qid_cwid_label:
-        if qid not in test_qids:
-            continue
-        label_cwids = dict()
-        year = qid_year[qid]
-        if year not in year_pkey_docpairs:
-            year_pkey_docpairs[year]=dict()
-        for cwid in qid_cwid_label[qid]:
-            label = qid_cwid_label[qid][cwid]
-            jud = year_label_jud[year][label]
-            label = jud_label[jud]
-            if label not in label_cwids:
-                label_cwids[label] = list()
-            label_cwids[label].append(cwid)
-        labels = list(label_cwids.keys())
-        for i in range(len(labels)):
-            for j in range(i + 1, len(labels)):
-                ll, lh = min(labels[i], labels[j]), max(labels[i], labels[j])
-                dls, dhs = label_cwids[ll], label_cwids[lh]
-                pairkey = '%s-%s'%(label_jud[lh], label_jud[ll])
-                if pairkey not in year_pkey_docpairs[year]:
-                    year_pkey_docpairs[year][pairkey]=list()
-                for dl, dh in itertools.product(dls, dhs):
-                    year_pkey_docpairs[year][pairkey].append((qid, dl, dh))
-    return year_pkey_docpairs
-
-def eval_docpair_predaccuracy(qid_cwid_score, year_pkey_docpairs, test_year):
-    pkey_docpairs = year_pkey_docpairs[test_year]
-    pkey_qidcount = dict()
-    pkey_qid_acc = dict()
-    for pkey in pkey_docpairs:
-        qid_dl_dh = pkey_docpairs[pkey]
-        if pkey not in pkey_qidcount:
-            pkey_qidcount[pkey]=dict()
-        for qid, dl, dh in qid_dl_dh:
-            if qid not in qid_cwid_score:
-                continue
-            if qid not in pkey_qidcount[pkey]:
-                pkey_qidcount[pkey][qid]=[0,0]
-            if dl in qid_cwid_score[qid] and dh in qid_cwid_score[qid]:
-                if qid_cwid_score[qid][dl] < qid_cwid_score[qid][dh]:
-                    pkey_qidcount[pkey][qid][0]+=1
-                pkey_qidcount[pkey][qid][1]+=1
-    for pkey in pkey_qidcount:
-        pkey_qid_acc[pkey] = dict()
-        accs = list()
-        total_all = 0
-        for qid in pkey_qidcount[pkey]:
-            correct, total = pkey_qidcount[pkey][qid]
-            total_all += total
-            acc = correct / total
-            pkey_qid_acc[pkey][qid] = acc
-            accs.append(acc)
-        pkey_qid_acc[pkey][0] = np.mean(accs)
-        pkey_qid_acc[pkey][-1] = total_all
-    return pkey_qidcount, pkey_qid_acc
-
-
 import sacred
 from sacred.utils import apply_backspaces_and_linefeeds
 
@@ -80,6 +20,55 @@ ex.captured_out_filter = apply_backspaces_and_linefeeds
 
 from utils.config import default_params
 default_params = ex.config(default_params)
+
+
+def create_docpairs(qid_cwid_label, test_qids, qid_year):
+    docpairs = {}
+    for qid in qid_cwid_label:
+        assert qid in test_qids
+        year = qid_year[qid]
+        docpairs.setdefault(year, {})
+        
+        label_cwids = {}
+        for cwid, raw_label in qid_cwid_label[qid].items():
+            jud = year_label_jud[year][raw_label]
+            label = jud_label[jud]
+            label_cwids.setdefault(label, []).append(cwid)
+           
+        for l1, l2 in itertools.combinations(sorted(label_cwids), 2):
+            pairkey = "%s-%s" % (label_jud[l2], label_jud[l1])
+            docpairs[year].setdefault(pairkey, [])
+
+            for dl, dh in itertools.product(label_cwids[l1], label_cwids[l2]):
+                docpairs[year][pairkey].append((qid, dl, dh))
+                
+    return docpairs
+
+    
+def eval_docpair_predaccuracy(qid_cwid_score, docpairs, test_year):
+    pkey_qidcount = dict()
+    for pkey, docpairs in docpairs[test_year].items():
+        for qid, dl, dh in docpairs:
+            #TODO why is this necessary?
+            if qid not in qid_cwid_score:
+                continue
+
+            pkey_qidcount.setdefault(pkey, {}).setdefault(qid, [])
+            #TODO better way to handle missing simmats?
+            if dl in qid_cwid_score[qid] and dh in qid_cwid_score[qid]:
+                pkey_qidcount[pkey][qid].append(qid_cwid_score[qid][dl] < qid_cwid_score[qid][dh])
+
+    pkey_qid_acc = {}
+    for pkey, qids in pkey_qidcount.items():
+        for qid, outcomes in qids.items():
+            correct, total = sum(outcomes), len(outcomes)
+            pkey_qid_acc.setdefault(pkey, {})[qid] = float(correct) / total
+
+        pkey_qid_acc[pkey][0] = np.mean(list(pkey_qid_acc[pkey].values()))
+        pkey_qid_acc[pkey][-1] = sum(len(outcomes) for outcomes in qids.values())
+        
+    return pkey_qid_acc
+
 
 @ex.automain
 def main(_log, _config):
@@ -126,12 +115,12 @@ def main(_log, _config):
             test_qids = year_qids[test_year]
             qrelf = get_qrelf(qrelfdir, test_year)
             qid_cwid_label = read_qrel(qrelf, test_qids, include_spam=False)
-            year_pkey_docpairs = create_docpairs(qid_cwid_label, test_qids, qid_year, jud_label, label_jud, year_label_jud)
+            year_pkey_docpairs = create_docpairs(qid_cwid_label, test_qids, qid_year)
             
             best_pred_dir, argmax_epoch, argmax_run, argmax_ndcg, argmax_err = get_epoch_from_val(pred_dirs, val_dirs)
 
             qid_cwid_invrank, _, runid = read_run(os.path.join(best_pred_dir, argmax_run))
-            pkey_qidcount, pkey_qid_acc = eval_docpair_predaccuracy(qid_cwid_invrank, year_pkey_docpairs, test_year)
+            pkey_qid_acc = eval_docpair_predaccuracy(qid_cwid_invrank, year_pkey_docpairs, test_year)
 
 
             dftable = df(pkey_qid_acc, index=sorted(list(qid_cwid_invrank.keys()))+[0, -1])
