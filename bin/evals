@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+CUR_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+. $CUR_DIR/set_env
+
+
+# $evalf could be
+# evals.docpairs  evals.rerank  evals.stat_latex  evals.summarize
+
+test_year=wt11
+
+run_experiment() {
+	python -m evals.docpairs with\
+		expname=$expname \
+		train_years=$train_years \
+		numneg=$numneg \
+		batch=$batch \
+		winlen=$winlen \
+		kmaxpool=$kmaxpool \
+		binmat=$binmat \
+		context=$context \
+		combine=$combine \
+		shuffle=$shuffle \
+		cascade=$cascade \
+		qproximity=$qproximity \
+		parentdir=$parentdir \
+		epochs=$iterations \
+		outdir=$outdir
+
+	python -m evals.rerank with\
+		expname=$expname \
+		train_years=$train_years \
+		numneg=$numneg \
+		batch=$batch \
+		winlen=$winlen \
+		kmaxpool=$kmaxpool \
+		binmat=$binmat \
+		context=$context \
+		combine=$combine \
+		shuffle=$shuffle \
+		cascade=$cascade \
+		qproximity=$qproximity \
+		parentdir=$parentdir \
+		epochs=$iterations \
+		outdir=$outdir
+}
+
+time run_experiment
+

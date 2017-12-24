@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+CUR_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+. $CUR_DIR/set_env
+
+train_years=wt09_10
+
+time python -m train_model with\
+	expname=$expname \
+	train_years=$train_years \
+	numneg=$numneg \
+	batch=$batch \
+	winlen=$winlen \
+	kmaxpool=$kmaxpool \
+	binmat=$binmat \
+	context=$context \
+	combine=$combine \
+	shuffle=$shuffle \
+	parentdir=$parentdir \
+	epochs=$iterations \
+	outdir=$outdir

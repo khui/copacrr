@@ -1,0 +1,9 @@
+#!usr/bin/env sh
+
+# I will determine which version of the packages to use when I try to run PACRR
+
+pip install --user tensorflow==1.1.0;
+pip install --user scipy==1.0.0; 
+pip install --user keras==2.1.2; 
+pip install --user numpy==1.13.3;
+pip install --user sacred==0.7.2;

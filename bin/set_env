@@ -1,0 +1,25 @@
+#!/usr/bin/env sh
+
+# place all environment variables here and nothing else
+
+export CUDA_VISIBLE_DEVICES=0
+export PATH="$PATH:/home/$USER/workspace/pyenv/anaconda3TFCPU/bin"
+export LD_LIBRARY_PATH="/home/$USER/workspace/pyenv/cuDNN/cuda/lib64"
+
+export parent_dir="/local/var/$USER/pacrr"
+export outdir=$parentdir
+export expname=pacrrpub
+export train_years=wt12_13
+export numneg=6
+export batch=32
+export winlen=3
+export kmaxpool=3
+export distill="firstk"
+export binmat=False
+export context=False
+export cascade=''
+export combine=16
+export qproximity=0
+export iterations=10
+export shuffle=False
+export parentdir=/local/var/$USER/pacrr
