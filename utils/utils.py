@@ -4,12 +4,12 @@ import json
 import pickle
 import h5py
 import numpy as np
+from random import randint
 from collections import Counter
 from keras.callbacks import Callback
 from keras.utils import plot_model
 from . import select_doc_pos
 from .config import contextdir
-
 
 logger = logging.getLogger('pacrr')
 
@@ -20,15 +20,16 @@ class DumpWeight(Callback):
 
     def on_epoch_end(self, epoch, logs={}):
         loss = logs['loss']
-        weight_name = '%d_%d_%d_%d.h5'%\
-        (epoch, int(loss*10000), self.batch_size, self.nb_sample)
+        weight_name = '%d_%d_%d_%d.h5' % \
+            (epoch, int(loss*10000), self.batch_size, self.nb_sample)
         if not os.path.isdir(self.weight_dir):
             try:
                 os.makedirs(self.weight_dir)
-            except OSError:
+            except (IOError, OSError):
                 # sometimes, the dirname is too long, so we have to shorten it
-                trimmed_name = '/'.join(self.weight_dir[:-1])
-                os.makedirs(trimmed_name)
+                # we add a random number at the end to avoid replacing a previous file
+                self.weight_dir = '/'.join(self.weight_dir.split('/')[:-1]) + '/model' + str(randint(1, 100000))
+                os.makedirs(self.weight_dir)
 
         weight_file=self.weight_dir + '/' + weight_name
         self.model.save_weights(weight_file)
@@ -77,9 +78,9 @@ def _load_doc_mat_desc(qids, qid_cwid_label, doc_mat_dir, qid_topic_idf, qid_des
             desc_cwid_f = doc_mat_dir + '/desc_doc_mat/%d/%s.npy'%(qid, cwid)
             topic_mat, desc_mat = np.empty((0,0), dtype=np.float32), np.empty((0,0), dtype=np.float32)
             if h5 is not None and cwid not in docmap_t:
-                logger.error('topic %s not exist.'%cwid)
+                logger.warning('topic %s does not exist.'%cwid)
             elif h5 is None and not os.path.isfile(topic_cwid_f):
-                logger.warning('%s not exist.'%topic_cwid_f)
+                logger.warning('%s does not exist.'%topic_cwid_f)
             elif usetopic:
                 if h5 is None:
                     topic_mat = np.load(topic_cwid_f)
@@ -89,9 +90,9 @@ def _load_doc_mat_desc(qids, qid_cwid_label, doc_mat_dir, qid_topic_idf, qid_des
                     logger.warning('topic_mat {0} {1} {2}'.format(qid, cwid, topic_mat.shape))
                     continue
             if h5 is not None and cwid not in docmap_d:
-                logger.error('desc %s not exist.'%cwid)
+                logger.warning('desc %s does not exist.'%cwid)
             elif h5 is None and not os.path.isfile(desc_cwid_f):
-                logger.warning('%s not exist.'%desc_cwid_f)
+                logger.warning('%s does not exist.'%desc_cwid_f)
             elif usedesc:
                 if h5 is None:
                     desc_mat = np.load(desc_cwid_f)[didxs]

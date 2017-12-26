@@ -80,7 +80,11 @@ def main(_log, _config):
         plt.tick_params('y')
         plt.xlabel('epoches')
         plt.title('loss:%d %.3f'%(argmin_loss_epoch, epoch_train_loss[argmin_loss_epoch]))
-        fig.savefig(outdir + '/' + name + '_' + plot_id + '.pdf', format='pdf')
+        try:
+            fig.savefig(outdir + name + '_' + plot_id + '.pdf', format='pdf')
+        except IOError:
+            # if the filename is too long to save, shorten it
+            fig.savefig(outdir + name + '_' + 'PACRR' + '.pdf', format='pdf')
         plt.close()
 
 
