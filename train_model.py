@@ -32,7 +32,7 @@ default_params = ex.config(default_params)
 @ex.automain
 def main(_log, _config):
     p = _config
-    
+
     modelname = file2name[p['modelfn']]
     mod_model = importlib.import_module('models.%s' % p['modelfn'])
     # load the model to be employed, say from models/pacrr.py
@@ -41,15 +41,16 @@ def main(_log, _config):
     model = model_cls(model_params, rnd_seed=p['seed'])
     # create a expid based on the configured parameters
     expid = model.params_to_string(model_params)
-   
-    # the model files 
+
+    # the model files
     outdir='%s/train_%s/%s/model_weight/%s'%(p['parentdir'], p['train_years'], p['expname'], expid)
     # the plots for the model, the training loss etc..
     detail_outdir='%s/train_%s/%s/model_detail/'%(p['parentdir'], p['train_years'], p['expname'])
 
     if not os.path.isdir(detail_outdir + 'outs'):
+        print(detail_outdir + 'outs')
         os.makedirs(detail_outdir + 'outs')
-    
+
     _log.info('Input parameters: {0}'.format(p))
     label2tlabel={4:2,3:2,2:2,1:1,0:0,-2:0}
     sample_label_prob=dict()
@@ -93,7 +94,7 @@ def main(_log, _config):
 
     # keras 2 steps per epoch is number of batches per epoch, not number of samples per epoch
     steps_per_epoch = np.int(p['nsamples'] / p['batch'])
-    
+
     # the generator for training data
     train_data_generator=\
             load_train_data_generator(qids, rawdoc_mat_dir, qid_cwid_label, N_GRAMS, p,\

@@ -3,7 +3,7 @@
 CUR_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 . $CUR_DIR/set_env
 
-train_years=wt09_10
+export train_years=wt09_10
 
 time python -m train_model with\
 	expname=$expname \

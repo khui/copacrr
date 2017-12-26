@@ -14,7 +14,7 @@ class PACRR(MODEL_BASE):
             'qproximity', 'context', 'shuffle', 'xfilters', 'cascade']
 
     def __init__(self, *args, **kwargs):
-        super(self, PACRR).__init__(*args, **kwargs)
+        super(PACRR, self).__init__(*args, **kwargs)
         self.NGRAM_NFILTER, _ = get_ngram_nfilter(self.p['winlen'], self.p['qproximity'],
                 self.p['maxqlen'], self.p['xfilters'])
         self.NGRAMS = sorted(self.NGRAM_NFILTER.keys())
@@ -193,6 +193,7 @@ class PACRR(MODEL_BASE):
         if p['context']:
             pos_inputs['context'] = Input(shape=(p['maxqlen'], p['simdim']), name='pos_context')
 
+        pos_score = None
         neg_inputs = {}
         for neg_ind in range(p['numneg']):
             neg_inputs[neg_ind] = self._create_inputs('neg%d' % neg_ind)
@@ -204,6 +205,7 @@ class PACRR(MODEL_BASE):
         neg_scores = [doc_scorer(neg_inputs[neg_ind], 'neg_%s'%neg_ind) for neg_ind in range(p['numneg'])]
 
         pos_neg_scores = [pos_score] + neg_scores
+        pos_neg_scores = pos_neg_scores[1:] # remove the None from `pos_score = None`
         pos_prob = Lambda(self.pos_softmax, name='pos_softmax_loss')(pos_neg_scores)
 
         pos_input_list = [pos_inputs[name] for name in pos_inputs]

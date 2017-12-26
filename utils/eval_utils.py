@@ -2,11 +2,11 @@ import os, copy
 jud_label = {'Nav':4, 'HRel':2, 'Rel':1, 'NRel':0, 'Junk':-2}
 label_jud = {4:'Nav', 2:'HRel', 1:'Rel', 0:'NRel', -2:'Junk'}
 year_label_jud = {'wt09':{2:'HRel', 1:'Rel', 0:'NRel'},\
-                  'wt10':{4:'Nav', 3:'HRel',2:'HRel', 1:'Rel', 0:'NRel', -2:'Junk'},\
-                    'wt11':{3:'Nav', 2:'HRel', 1:'Rel', 0:'NRel', -2:'Junk'},\
-                  'wt12':{4:'Nav', 3:'HRel', 2:'HRel',1:'Rel', 0:'NRel', -2:'Junk'},\
-                  'wt13':{4:'Nav', 3:'HRel', 2:'HRel',1:'Rel', 0:'NRel', -2:'Junk'},\
-                  'wt14':{4:'Nav', 3:'HRel',  2:'HRel', 1:'Rel', 0:'NRel', -2:'Junk'}}
+        'wt10':{4:'Nav', 3:'HRel',2:'HRel', 1:'Rel', 0:'NRel', -2:'Junk'},\
+        'wt11':{3:'Nav', 2:'HRel', 1:'Rel', 0:'NRel', -2:'Junk'},\
+        'wt12':{4:'Nav', 3:'HRel', 2:'HRel',1:'Rel', 0:'NRel', -2:'Junk'},\
+        'wt13':{4:'Nav', 3:'HRel', 2:'HRel',1:'Rel', 0:'NRel', -2:'Junk'},\
+        'wt14':{4:'Nav', 3:'HRel',  2:'HRel', 1:'Rel', 0:'NRel', -2:'Junk'}}
 
 
 def read_run(run_file):
@@ -20,11 +20,11 @@ def read_run(run_file):
                 qid_cwid_score[qid]=dict()
                 qid_cwid_invrank[qid]=dict()
             qid_cwid_score[qid][cwid] = score
-            qid_cwid_invrank[qid][cwid] = 1 / rank 
+            qid_cwid_invrank[qid][cwid] = 1 / rank
     return qid_cwid_invrank, qid_cwid_score, runid
 
 def get_epoch_from_uniqval(test_dir, val_dir):
-    def read_all_pred(pred_dir): 
+    def read_all_pred(pred_dir):
         run_epoch_ndcg_err = dict()
         for run in os.listdir(pred_dir):
             if run.split('.')[-1] != 'run':
@@ -44,7 +44,10 @@ def get_epoch_from_uniqval(test_dir, val_dir):
     return argmax_epoch, argmax_test_run, argmax_val_run
 
 def get_epoch_from_val(test_dirs, val_dirs):
-    def read_all_pred(pred_dir): 
+    assert test_dirs, "test_dir must be nonempty"
+    assert val_dirs, "val_dir must be nonempty"
+
+    def read_all_pred(pred_dir):
         run_epoch_ndcg_err = dict()
         for run in os.listdir(pred_dir):
             if run.split('.')[-1] != 'run':
@@ -63,7 +66,7 @@ def get_epoch_from_val(test_dirs, val_dirs):
             best_test_dir = test_dir
             best_err = argmax_err
             best_epoch = argmax_epoch
-    test_epoch_ndcg_err = read_all_pred(best_test_dir)     
+    test_epoch_ndcg_err = read_all_pred(best_test_dir)
     argmax_run, argmax_ndcg, argmax_err = test_epoch_ndcg_err[best_epoch]
     return best_test_dir, best_epoch, argmax_run, argmax_ndcg, argmax_err
 
@@ -81,7 +84,7 @@ def get_model_param(model_params_raw):
     m_ps = [dict()]
     for k, vs in model_params_raw.items():
         cols = vs.split('|') if type(vs) is str else [vs]
-        # with more than one value for a key, 
+        # with more than one value for a key,
         # one duplicate the m_ps for the number of values times
         tmp_m_ps = copy.deepcopy(m_ps)
         for i in range(len(cols)-1):

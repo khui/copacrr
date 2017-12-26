@@ -151,7 +151,7 @@ class MODEL_BASE(object):
             # because the layer have so many options, it is cleaner
             # to just define dictionaries which set their properties
             cov_args = {
-                    "kernel_size": "",
+                    "kernel_size": (n_query, n_doc),
                     "strides": (1, subsample_docdim),
                     "padding": "same",
                     "use_bias": True,
@@ -194,8 +194,8 @@ class MODEL_BASE(object):
             re_ql_ds[dim_name] = Lambda(lambda t:backend.squeeze(t,axis=2), name='re_ql_ds_%s'%(dim_name))
             pool_filter_layer[dim_name] = MaxPooling2D(**pool_filter_layer_args)
 
-            ex_filter_layer = Permute((1, 3, 2), input_shape=(len_query, 1, n_filter), name='permute_filter_lenquery')
-            return re_input, cov_sim_layers, pool_sdim_layer, pool_sdim_layer_context, pool_filter_layer, ex_filter_layer, re_ql_ds
+        ex_filter_layer = Permute((1, 3, 2), input_shape=(len_query, 1, n_filter), name='permute_filter_lenquery')
+        return re_input, cov_sim_layers, pool_sdim_layer, pool_sdim_layer_context, pool_filter_layer, ex_filter_layer, re_ql_ds
 
     def dump_weights(self, weight_file):
         self.model.save_weights(weight_file)

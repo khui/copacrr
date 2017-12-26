@@ -9,3 +9,8 @@ pip install --user numpy==1.13.3;
 pip install --user sacred==0.7.2;
 pip install --user matplotlib==2.1.1;
 pip install --user pandas==0.21.1;
+pip install --user h5py==2.7.1;
+pip install --user pydot_ng==1.0.0;
+
+echo "GraphViz must be installed by your standard system installation method"
+echo "If you can use apt-get, run 'sudo apt-get install graphviz'"
