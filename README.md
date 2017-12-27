@@ -68,7 +68,13 @@ If you would rather generate the matrices manually, please:
 
 ## Usage: train, predict and evaluation
 
-Please set the `set_env` file with the correct variables.
+The `set\_env` script in the `bin` directory declares the environment variables
+which are run in all other scripts in `bin`. If you want to replicate our
+results, then don't worry about changing the variables in `set\_env`. If you
+want to explore the parameter space, then change something in `set\_env` before
+you try changing someone elsewhere in the code to be safe.
+
+![PDFComic: Dec 8, 2006](./phd120806s.gif)
 
 `parentdir` is the root directory for all outputs.
 
