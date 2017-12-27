@@ -77,10 +77,10 @@ If you would rather generate the matrices manually, please:
 
 ## Usage: train, predict and evaluation
 
-The `set\_env` script in the `bin` directory declares the environment variables
+The `set_env` script in the `bin` directory declares the environment variables
 which are run in all other scripts in `bin`. If you want to replicate our
-results, then don't worry about changing the variables in `set\_env`. If you
-want to explore the parameter space, then change something in `set\_env` before
+results, then don't worry about changing the variables in `set_env`. If you
+want to explore the parameter space, then change something in `set_env` before
 you try changing someone elsewhere in the code to be safe.
 
 ![PHDComics: Dec 8, 2006](./phd120806s.gif)
@@ -89,19 +89,19 @@ you try changing someone elsewhere in the code to be safe.
 
 ### Train
 
-To train the model, we recommend running the `train\_model` script in bin. If
+To train the model, we recommend running the `train_model` script in bin. If
 you would prefer to train directly, then run the command
 
 ```bash
-python -m train\_model with expname=$expname train\_years=$train\_years {param\_name=param\_val}
+python -m train_model with expname=$expname train_years=$train_years {param_name=param_val}
 ```
 
 ### Predict
-We recommend that you use the `pred\_per\_epoch` script in bin to predict. If
+We recommend that you use the `pred_per_epoch` script in bin to predict. If
 you would prefer to train directly, then run the command
 
 ```bash
-python -m pred\_per\_epoch with expname=$expname train\_years=$train\_years test\_year=$test\_year {param\_name=param\_val}
+python -m pred_per_epoch with expname=$expname train_years=$train_years test_year=$test_year {param_name=param_val}
 ```
 
 ### Evaluation
@@ -111,22 +111,22 @@ in our RE-PACRR paper.
 
 Before evaluating, make sure that you dumped [all the adhoc
 trec-runs](http://trec.nist.gov/results/) from 2009 through 2014 into
-utils/data/trec\_run and their corresponding evaluation results into
-utils/data/eval\_trec\_runs. These are needed for Rerank-ALL.
+`utils/data/trec_run` and their corresponding evaluation results into
+`utils/data/eval_trec_runs`. These are needed for Rerank-ALL.
 
 Our evaluation code generates the exp that we reported in our PACRR and REPACRR
 papers, but you can develop a different evaluation pipeline to use a different
 dataset or benchmark.
 
 For example, the usage of the six years' Web Track for training/validation/test
-is hard coded in the train\_test\_years in utils/config.py, and one needs to
+is hard coded in the `train_test_years` in utils/config.py, and one needs to
 edit it when fewer years are used.
 
 To evaluate the model, you can run the `evals` script in bin or run the following commands:
 
 ```bash
-python -m evals.docpairs with expname=$expname train\_years=$train\_years {param\_name=param\_val}
-python -m evals.rerank with expname=$expname train\_years=$train\_years {param\_name=param\_val}
+python -m evals.docpairs with expname=$expname train_years=$train_years {param_name=param_val}
+python -m evals.rerank with expname=$expname train_years=$train_years {param_name=param_val}
 ```
 
 ## Citation
