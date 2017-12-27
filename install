@@ -1,6 +1,4 @@
-#!usr/bin/env sh
-
-# I will determine which version of the packages to use when I try to run PACRR
+#!/usr/bin/env sh
 
 pip install --user tensorflow==1.1.0;
 pip install --user scipy==1.0.0;
@@ -12,5 +10,6 @@ pip install --user pandas==0.21.1;
 pip install --user h5py==2.7.1;
 pip install --user pydot_ng==1.0.0;
 
-echo "GraphViz must be installed by your standard system installation method"
+echo "GraphViz cannot be install by pip"
 echo "If you can use apt-get, run 'sudo apt-get install graphviz'"
+echo "It is also available on yum, pacman, and homebrew"

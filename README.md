@@ -27,14 +27,14 @@ Kai Hui, Andrew Yates, Klaus Berberich, Gerard de Melo.
 
 ## Model overview
 
-*(RE-)PACRR* models the interaction between a query and a document to evaluate
+*(RE-)PACRR* models the interaction between a document and a query to evaluate
 the relevance of the document to the query. The input is the similarity matrix
 comparing the query and the document, and the output is a scalar. The full
 pipeline of the model will be published soon.
 
 ## Getting Started
 
-This code runs on Python 2.
+The code uses Python 2.
 
 ### Install Required Packages
 
@@ -53,6 +53,10 @@ If you would prefer to install manually, please install these packages:
 * **Keras** ([instructions](https://keras.io/#installation))
 * **numpy** and **scipy** ([instructions](https://www.scipy.org/install.html))
 * **sacred** ([instruction](http://sacred.readthedocs.io/en/latest/quickstart.html#installation))
+* **matplotlib** (available on pip)
+* **pandas** (available on pip)
+* **h5py** (available on pip)
+* **pydot\_ng** (available on pip)
 
 ## Preparation: word2vec and similarity matrices
 
@@ -69,8 +73,8 @@ If you would rather generate the matrices manually, please:
 2. Get a pretrained word2vec corpus
 
 3. Add vectors for the terms which are not included in the pretrained word2vec
-   corpus. You can do so by running the `train_w2v.py` file, adds new vectors
-   and improves those already present.
+   corpus. You can do so by running the `train_w2v.py` file, which adds new
+   vectors and improves those already present.
 
 4. Compute the similarity matrices for individual query-document pairs. This is
    not included in the code, so you will have to do so manually.
@@ -78,14 +82,12 @@ If you would rather generate the matrices manually, please:
 ## Usage: train, predict and evaluation
 
 The `set_env` script in the `bin` directory declares the environment variables
-which are run in all other scripts in `bin`. If you want to replicate our
+which are used in all other scripts in `bin`. If you want to replicate our
 results, then don't worry about changing the variables in `set_env`. If you
 want to explore the parameter space, then change something in `set_env` before
-you try changing someone elsewhere in the code to be safe.
+you try changing something elsewhere in the code.
 
 ![PHDComics: Dec 8, 2006](./phd120806s.gif)
-
-`parentdir` is the root directory for all outputs.
 
 ### Train
 
