@@ -10,9 +10,18 @@ Kai Hui, Andrew Yates, Klaus Berberich, Gerard de Melo.
 [RE-PACRR: A Context and Density-Aware Neural Information Retrieval Model](https://arxiv.org/pdf/1706.10192.pdf).
 *In Neu-IR workshop, 2017.*
 
+Andrew Yates, Kai Hui.
+[DE-PACRR: Exploring Layers Inside the PACRR Model](https://arxiv.org/pdf/1706.08746.pdf).
+*In Neu-IR '17.*
+
+Kai Hui, Andrew Yates, Klaus Berberich, Gerard de Melo.
+[Co-PACRR: A Context-Aware Neural IR Model for Ad-hoc Retrieval](https://arxiv.org/pdf/1706.10192.pdf).
+*In WSDM '18*
+
 ## Contact
 
-***Code authors:*** Kai Hui and Andrew Yates
+***Code authors:*** [Kai Hui](https://people.mpi-inf.mpg.de/~khui/), [Andrew Yates](https://andrewyates.net/), and
+[Abhinav Madahar](https://abhinavmadahar.com)
 
 ***Pull requests and issues:*** @khui @andrewyates
 
@@ -74,7 +83,7 @@ results, then don't worry about changing the variables in `set\_env`. If you
 want to explore the parameter space, then change something in `set\_env` before
 you try changing someone elsewhere in the code to be safe.
 
-![PDFComic: Dec 8, 2006](./phd120806s.gif)
+![PHDComics: Dec 8, 2006](./phd120806s.gif)
 
 `parentdir` is the root directory for all outputs.
 
@@ -145,4 +154,24 @@ If you use the code, please cite the following papers:
 	booktitle={The SIGIR 2017 Workshop on Neural Information Retrieval},
 	year={2017}
 }
+```
+
+### DE-PACRR
+
+```latex
+@inproceedings{hui2017de,
+	title={DE-PACRR: Exploring Layers Inside the PACRR Model},
+	author={Hui, Kai and Yates, Andrew},
+	booktitle={The SIGIR 2017 Workshop on Neural Information Retrieval},
+	year={2017}
+```
+
+### CO-PACRR
+
+```latex
+@inproceedings{hui2017co,
+	title={Co-PACRR: A Context-Aware Neural IR Model for Ad-hoc Retrieval},
+	author={Hui, Kai and Yates, Andrew and Berberich, Klaus and de Melo, Gerard},
+	booktitle={Proceedings of the Eleventh ACM International Conference on Web Search and Data Mining},
+	year={2017}
 ```
