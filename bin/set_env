@@ -7,7 +7,7 @@ export PATH="$PATH:/home/$USER/workspace/pyenv/anaconda3TFCPU/bin"
 export LD_LIBRARY_PATH="/home/$USER/workspace/pyenv/cuDNN/cuda/lib64"
 
 export expname=pacrrpub
-export train_years=wt12_13
+export train_years=wt09_10
 export numneg=6
 export batch=32
 export winlen=3

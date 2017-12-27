@@ -53,14 +53,14 @@ def plot_curve(epoch_err_ndcg_loss, outdir, plot_id, p):
     plt.close()
 
 
-def eval_run(_log, qid_cwid_pred, expid, perlf, treceval, tmp_dir, k, qrelf):		
+def eval_run(_log, qid_cwid_pred, expid, perlf, treceval, tmp_dir, k, qrelf):
     with tempfile.NamedTemporaryFile(mode='w', delete=True, dir=tmp_dir) as tmpf,\
             open(os.path.join(tmp_dir, 'tmperr.f'),'a+') as errf:
         for qid in sorted(qid_cwid_pred):
             rank = 1
             for cwid in sorted(qid_cwid_pred[qid], key=lambda d:-qid_cwid_pred[qid][d]):
                 tmpf.write('%d Q0 %s %d %.10e %s\n'%(qid, cwid, rank, qid_cwid_pred[qid][cwid], expid))
-                rank += 1 
+                rank += 1
         tmpf.flush()
         run2eval = tmpf.name
         try:
@@ -105,9 +105,20 @@ def pred(_log, _config):
     weight_dir='%s/train_%s/%s/model_weight/%s' % (p['parentdir'], p['train_years'],p['expname'], expid)
     detail_outdir='%s/train_%s/%s/model_detail/' % (p['parentdir'], p['train_years'], p['expname'])
 
+    try:
+        os.listdir(outdir_run)
+    except OSError:
+        expid = raw_input('The original expid is longer than your system\'s max filename length. Enter new expid: ')
+        outdir_run='%s/%s'%(outdir_plot, expid)
+        tmp_dir=os.path.join(outdir_run,'tmp')
+
     if not os.path.isdir(weight_dir):
         _log.error('No such dir {0}'.format(weight_dir))
-        raise SoftFailure('No such dir {0}'.format(weight_dir))
+        weight_dir = raw_input('Enter replacement weight_dir: ')
+
+    if not os.path.isdir(detail_outdir):
+        _log.error('No such dir {0}'.format(weight_dir))
+        detail_outdir = raw_input('Enter replacement detail_outdir: ')
 
     if len(os.listdir(weight_dir)) < 1:
         raise SoftFailure('weight dir empty')
@@ -156,7 +167,7 @@ def pred(_log, _config):
         if fn.endswith(".run"):
             fields = fn[:-4].split("_") # trim .run
             assert len(fields) == 5
-            
+
             epoch, loss = int(fields[0]), int(fields[4])
             ndcg, mapv, err = float(fields[1]), float(fields[2]), float(fields[3])
 
@@ -164,7 +175,7 @@ def pred(_log, _config):
             if epoch in finished_epochs:
                 _log.error("TODO two weights exist for same epoch")
             finished_epochs[epoch] = (epoch, err, ndcg, mapv, loss)
-                            
+
     _log.info('skipping finished epochs: {0}'.format(finished_epochs))
 
     def model_pred(NGRAM_NFILTER, weight_file, test_data, test_docids, test_qids):

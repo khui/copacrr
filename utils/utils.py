@@ -4,7 +4,6 @@ import json
 import pickle
 import h5py
 import numpy as np
-from random import randint
 from collections import Counter
 from keras.callbacks import Callback
 from keras.utils import plot_model
@@ -28,7 +27,8 @@ class DumpWeight(Callback):
             except (IOError, OSError):
                 # sometimes, the dirname is too long, so we have to shorten it
                 # we add a random number at the end to avoid replacing a previous file
-                self.weight_dir = '/'.join(self.weight_dir.split('/')[:-1]) + '/model' + str(randint(1, 100000))
+                model_id = raw_input('Original model ID too long to save to system. Enter new model ID: ')
+                self.weight_dir = '/'.join(self.weight_dir.split('/')[:-1]) + '/' + model_id
                 os.makedirs(self.weight_dir)
 
         weight_file=self.weight_dir + '/' + weight_name

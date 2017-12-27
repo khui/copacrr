@@ -200,7 +200,7 @@ class MODEL_BASE(object):
     def dump_weights(self, weight_file):
         self.model.save_weights(weight_file)
 
-        def build_from_dump(self, weight_file):
-            self.build_predict()
+    def build_from_dump(self, weight_file):
+        self.build_predict()
         self.model.load_weights(weight_file)
         return self.model
