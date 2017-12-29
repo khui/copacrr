@@ -24,7 +24,7 @@ run_experiment() {
 		cascade=$cascade \
 		qproximity=$qproximity \
 		parentdir=$parentdir \
-		epochs=$iterations \
+		epochs=$epochs \
 		outdir=$outdir
 
 	python -m evals.rerank with\
@@ -41,9 +41,8 @@ run_experiment() {
 		cascade=$cascade \
 		qproximity=$qproximity \
 		parentdir=$parentdir \
-		epochs=$iterations \
+		epochs=$epochs \
 		outdir=$outdir
 }
 
 time run_experiment
-

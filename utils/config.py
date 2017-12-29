@@ -4,6 +4,7 @@ import itertools
 import os
 import sys
 import time
+from os import environ as env
 
 all_years = ['09', '10', '11', '12', '13', '14']
 #train_test_years = {'wt12_13':['wt11', 'wt14']}
@@ -22,8 +23,6 @@ file2name = {
     'elm_pacrr':    'ELMPACRR'
     }
 name2file = {v: k for k, v in file2name.items()}
-
-pipeline_params = ['expname', 'modelfn', 'train_years', 'seed', 'parentdir']
 
 param2acronym=(('POS_METHOD',''), ('BINARY',''), ('QPROXIMITY', 'qp'), \
     ('CONTEXT', 'ct'), \
@@ -76,41 +75,40 @@ trec_run_basedir=os.path.join(cur_dir, "data", "trec_runs")
 # the evaluation results for all origial runs
 eval_trec_run_basedir=os.path.join(cur_dir, "data", "eval_trec_runs")
 
-
-
+# all default parameters should be declared in set_env
 def default_params():
-    expname = "debug" # experiment name
-    modelfn = "pacrr" # model to run
-    train_years = "wt09_10_11_12" # years to train on
-    test_year = "wt13" # year to predict on
-    seed = 7541
-    parentdir = os.environ['parentdir']
-    outdir = os.environ['outdir']
+    expname = env['expname'] # experiment name
+    modelfn = env['modelfn'] # model to run
+    train_years = env['train_years'] # years to train on
+    test_year = env['test_year'] # year to predict on
+    seed = int(env['seed'])
+    parentdir = env['parentdir']
+    outdir = env['outdir']
 
-    simdim = 800 # length of document dimension
-    binmat = False # use binary similarity matrices? (boolean)
-    numneg = 1 # number of non-relevant docs in softmax
-    batch = 16 # batch size
-    epochs = 150 # number of iterations to run
-    nsamples = 2048 # samples per epoch
-    maxqlen = 16 # maximum query length
+    simdim = int(env['simdim']) # length of document dimension
+    binmat = bool(env['binmat']) # use binary similarity matrices? (boolean)
+    numneg = int(env['numneg']) # number of non-relevant docs in softmax
+    batch = int(env['batch']) # batch size
+    epochs = int(env['epochs']) # number of iterations to run
+    nsamples = int(env['nsamples']) # samples per epoch
+    maxqlen = int(env['nsamples']) # maximum query length
 
-    distill = "firstk" # similarity matrix distillation method
-    nfilter = 32 # number of filters to use for the n-gram convolutions
-    winlen = 3 # maximum n-gram length
-    kmaxpool = 3 # top k for max pooling
-    combine = 32 # type of combination layer to use. 0 for an LSTM, otherwise the number of feedforward layer dimensions
-    qproximity = 0 # additional NxN proximity filter to include (0 to disable)
-    context = True # include match contexts? (boolean)
-    shuffle = True # shuffle input to the combination layer? (i.e., LSTM or feedforward layer)
+    distill = env['distill'] # similarity matrix distillation method
+    nfilter = int(env['nfilter']) # number of filters to use for the n-gram convolutions
+    winlen = int(env['winlen']) # maximum n-gram length
+    kmaxpool = int(env['kmaxpool']) # top k for max pooling
+    combine = int(env['combine']) # type of combination layer to use. 0 for an LSTM, otherwise the number of feedforward layer dimensions
+    qproximity = int(env['qproximity']) # additional NxN proximity filter to include (0 to disable)
+    context = bool(env['context']) # include match contexts? (boolean)
+    shuffle = bool(env['shuffle']) # shuffle input to the combination layer? (i.e., LSTM or feedforward layer)
 
-    ek = 10 # topk expansion terms to use when enhance=qexpand or enhance=both
+    ek = int(env['ek']) # topk expansion terms to use when enhance=qexpand or enhance=both
 
 
     # configure the sizes of extra filters with format: axb.cxd.<more>
     # for example: 1x100.3x1 => [(1,100), (3,1)]
     # to turn off, set to an empty string
-    xfilters = ""
+    xfilters = env['xfilters']
 
     # configure the cascade mode of the max-pooling
     # Namely, pool over [first10, first20, ..., first100, wholedoc]
@@ -118,13 +116,10 @@ def default_params():
     # the input is a list of relative positions for pooling
     # for example, 25.50.75.100 => [25,50,75,100] on a doc with length 100
     # to turn off, set to an empty string
-    cascade = ""
+    cascade = env['cascade']
 
     # (DRMM only) size of first dense layer
-    drmmdense = 5
+    drmmdense = int(env['drmmdense'])
 
-    ut = True # use topics in queries
-    ud = True # use descriptions in queries
-
-    if 'debug' in expname:
-        epochs = 5
+    ut = bool(env['ut']) # use topics in queries
+    ud = bool(env['ud']) # use descriptions in queries

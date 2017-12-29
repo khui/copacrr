@@ -3,9 +3,10 @@
 CUR_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 . $CUR_DIR/set_env
 
-time python -m train_model with\
+time python -m train_model with \
 	expname=$expname \
 	train_years=$train_years \
+	test_year=$test_year \
 	numneg=$numneg \
 	batch=$batch \
 	winlen=$winlen \
@@ -15,5 +16,5 @@ time python -m train_model with\
 	combine=$combine \
 	shuffle=$shuffle \
 	parentdir=$parentdir \
-	epochs=$iterations \
+	epochs=$epochs \
 	outdir=$outdir

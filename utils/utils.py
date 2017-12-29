@@ -494,4 +494,8 @@ def load_train_data_generator(qids, rawdoc_mat_dir, qid_cwid_label, N_GRAMS, par
             n_dims = SIM_DIM, n_batch=n_batch, random_shuffle=True, random_seed=rnd_seed, qid_context=qid_context)
     return train_data_generator
 
-
+# XXX: values from b replace those from a
+def merge_dicts(a, b):
+    merged = a.copy()
+    merged.update(b)
+    return merged

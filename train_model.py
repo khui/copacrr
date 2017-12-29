@@ -1,23 +1,25 @@
-import os, importlib
-import keras.callbacks
+import os
+import importlib
+import pickle
+import logging
+import numpy as np
+import matplotlib as mpl
+import sacred
+from sacred.utils import apply_backspaces_and_linefeeds
+from utils.utils import load_train_data_generator, DumpWeight, dump_modelplot
 from utils.year_2_qids import get_train_qids, get_qrelf
 from utils.common_utils import read_qrel, config_logger, SoftFailure
 from utils.ngram_nfilter import get_ngram_nfilter
-from utils.utils import load_train_data_generator, DumpWeight, dump_modelplot
-import numpy as np, matplotlib as mpl
-mpl.use('Agg')
-mpl.rcParams.update({'font.size': 10})
-import matplotlib.pyplot as plt
-import pickle, logging
 from utils.config import file2name, default_params, perlf, qrelfdir, rawdoc_mat_dir
 # forces the tensorflow session to be launched immediately
 # it is important when the tf random seed is fixed
 import keras.backend as K
+import keras.callbacks
 K.get_session()
-# import for sacred
-import sacred
-from sacred.utils import apply_backspaces_and_linefeeds
 
+mpl.use('Agg')
+mpl.rcParams.update({'font.size': 10})
+import matplotlib.pyplot as plt # pyplot must be imported after mpl.use is run
 
 # set up the sacred env
 ex = sacred.Experiment('train')
@@ -26,8 +28,6 @@ sacred.SETTINGS.HOST_INFO.CAPTURED_ENV.append('CUDA_VISIBLE_DEVICES')
 sacred.SETTINGS.HOST_INFO.CAPTURED_ENV.append('USER')
 ex.captured_out_filter = apply_backspaces_and_linefeeds
 default_params = ex.config(default_params)
-
-
 
 @ex.automain
 def main(_log, _config):

@@ -1,10 +1,13 @@
+from os import environ as env
+import tensorflow as tf
+from keras import backend
 from keras.models import Sequential, Model
-from keras.layers.convolutional import Conv2D
-from keras.layers.pooling import MaxPooling2D
 from keras.layers import Activation, Permute, Dense, Dropout, Embedding, \
         Flatten, Input, merge, Lambda, Reshape
-from keras import backend
-import tensorflow as tf
+from keras.layers.convolutional import Conv2D
+from keras.layers.pooling import MaxPooling2D
+from utils.utils import merge_dicts
+
 backend.clear_session()
 
 from utils.config import file2name, name2file
@@ -18,7 +21,7 @@ param_types = {'distill': str, 'xfilters': str, 'cascade': str,
 
 class MODEL_BASE(object):
     #TODO dont print some of the opts when they match default value? eg maxqlen,epochs,nsamples
-    #TODO epochs and nsamples could be moved to pipeline params, if that makes sense
+
     common_params = ['simdim', 'epochs', 'nsamples', 'maxqlen', 'binmat', 'numneg', 'batch', 'ud', 'ut']
 
     def params_to_string(self, params, skip_check=False):
@@ -79,10 +82,10 @@ class MODEL_BASE(object):
         return out
 
     def __init__(self, p, rnd_seed):
-        self.p = p
+        self.p = p # model parameters
         self.rnd_seed = rnd_seed
 
-        #TODO fix seeding. I think this can be done by moving set_random_seed to before Keras is impiorted
+        #TODO fix seeding. I think this can be done by moving set_random_seed to before Keras is imported
         # https://github.com/fchollet/keras/issues/2280
         # if len(tf.get_default_graph()._nodes_by_id.keys()) > 0:
         #     raise RuntimeError("Seeding is not supported after building part of the graph. "

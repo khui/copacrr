@@ -6,20 +6,39 @@ export CUDA_VISIBLE_DEVICES=0
 export PATH="$PATH:/home/$USER/workspace/pyenv/anaconda3TFCPU/bin"
 export LD_LIBRARY_PATH="/home/$USER/workspace/pyenv/cuDNN/cuda/lib64"
 
-export expname=pacrrpub
-export train_years=wt09_10
-export numneg=6
-export batch=32
+# define the default model parameters
+export expname=debug # used to set $epochs
+export modelfn=pacrr
+export train_years=wt09_10_11_12
+export test_year=wt13
+export seed=7541
+export simdim=800
+export binmat=False
+export numneg=6 # setting this too low immediately crashes the model
+export batch=16
+export nsamples=64
+export maxqlen=16
+export distill=firstk
+export nfilter=16
 export winlen=3
 export kmaxpool=3
-export distill="firstk"
-export binmat=False
-export context=False
-export cascade=''
 export combine=16
+export context=False # may crash model if True
+export shuffle=True
+export ek=10
+export xfilters=""
+export cascade=""
 export qproximity=0
-export iterations=10
-export shuffle=False
+export drmmdense=5
+export ut=True
+export ud=True
+
+# if too many epochs are used, the model will run out of the RAM and crash
+if [ "$expname" = "debug" ]; then
+	export epochs=1
+else
+	export epochs=150
+fi
 
 if [ -d "/local/var/$USER/pacrr" ]; then
 	parentdir="/local/var/$USER/pacrr"

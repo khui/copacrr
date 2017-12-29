@@ -1,12 +1,12 @@
+import tensorflow as tf
+from keras import backend
 from keras.models import Sequential, Model
-from keras.layers import Permute, Activation, Dense, Dropout, Embedding, \
+from keras.layers import Activation, Permute, Dense, Dropout, Embedding, \
         Flatten, Input, merge, Lambda, Reshape, Convolution2D, MaxPooling2D
 from keras.layers.merge import Concatenate
 from keras.layers.recurrent import LSTM
-from keras import backend
-from .model_base import MODEL_BASE
-import tensorflow as tf
 from utils.ngram_nfilter import get_ngram_nfilter
+from .model_base import MODEL_BASE
 
 class PACRR(MODEL_BASE):
 

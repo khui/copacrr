@@ -18,5 +18,5 @@ time python -m pred_per_epoch with\
 	combine=$combine \
 	shuffle=$shuffle \
 	parentdir=$parentdir \
-	epochs=$iterations \
+	epochs=$epochs \
 	outdir=$outdir
