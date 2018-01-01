@@ -94,10 +94,12 @@ def main(_log, _config):
             pred_dirs, val_dirs = list(), list()
 
             for expid in expids:
-                pred_dir = raw_input('Enter pred_dir or leave blank to use default: ') or \
-                        '%s/train_%s/%s/predict_per_epoch/test_%s/%s' % (p['parentdir'], train_years, p['expname'], test_year, expid)
-                val_dir =  raw_input('Enter val_dir or leave blank to use default: ') or \
-                        '%s/train_%s/%s/predict_per_epoch/test_%s/%s' % (p['parentdir'], train_years, p['expname'], val_year , expid)
+                if not os.path.isdir('%s/train_%s/%s/predict_per_epoch/test_%s/%s' % (p['parentdir'], train_years, p['expname'], test_year, expid)):
+                    pred_dir = raw_input('Enter pred_dir: ')
+
+                if not os.path.isdir( '%s/train_%s/%s/predict_per_epoch/test_%s/%s' % (p['parentdir'], train_years, p['expname'], val_year , expid)):
+                    val_dir =  raw_input('Enter val_dir or leave blank to use default: ')
+
                 if not os.path.isdir(pred_dir) or not os.path.isdir(val_dir):
                     warnings.warn('No such dir {0}/{1}'.format(pred_dir, val_dir), RuntimeWarning)
                     continue

@@ -111,6 +111,7 @@ def pred(_log, _config):
         expid = raw_input('The original expid is longer than your system\'s max filename length. Enter new expid: ')
         outdir_run='%s/%s'%(outdir_plot, expid)
         tmp_dir=os.path.join(outdir_run,'tmp')
+        weight_dir='%s/train_%s/%s/model_weight/%s' % (p['parentdir'], p['train_years'],p['expname'], expid)
 
     if not os.path.isdir(weight_dir):
         _log.error('No such dir {0}'.format(weight_dir))

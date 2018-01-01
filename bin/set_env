@@ -1,7 +1,8 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
-# place all environment variables here and nothing else
+CUR_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+# place all environment variables here and nowhere else
 export CUDA_VISIBLE_DEVICES=0
 export PATH="$PATH:/home/$USER/workspace/pyenv/anaconda3TFCPU/bin"
 export LD_LIBRARY_PATH="/home/$USER/workspace/pyenv/cuDNN/cuda/lib64"
@@ -16,15 +17,15 @@ export simdim=800
 export binmat=False
 export numneg=6 # setting this too low immediately crashes the model
 export batch=16
-export nsamples=64
+export nsamples=2048
 export maxqlen=16
 export distill=firstk
-export nfilter=16
+export nfilter=32
 export winlen=3
 export kmaxpool=3
 export combine=16
-export context=False # may crash model if True
-export shuffle=True
+export context=False
+export shuffle=False
 export ek=10
 export xfilters=""
 export cascade=""
@@ -35,11 +36,13 @@ export ud=True
 
 # if too many epochs are used, the model will run out of the RAM and crash
 if [ "$expname" = "debug" ]; then
-	export epochs=1
+	export epochs=5
 else
 	export epochs=150
 fi
 
+# maintain backwards compatibility by setting the original parentdir
+# as the default
 if [ -d "/local/var/$USER/pacrr" ]; then
 	parentdir="/local/var/$USER/pacrr"
 else
@@ -50,6 +53,11 @@ fi
 export parentdir
 export outdir=$parentdir
 
-printf "Directory of the similarity matrices: "
-read sim_dir
+# autodetect a simmat directory
+if [ -d "$CUR_DIR/../simmat" ]; then
+	sim_dir="$CUR_DIR/../simmat"
+else
+	printf "Directory of the similarity matrices: "
+	read sim_dir
+fi
 export sim_dir
