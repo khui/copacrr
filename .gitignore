@@ -1,5 +1,6 @@
-*.pyc
 simmat
-output
+pacrr
 download
+
+*.pyc
 *.swp

@@ -41,13 +41,17 @@ else
 	export epochs=150
 fi
 
-# maintain backwards compatibility by setting the original parentdir
-# as the default
+# maintain backwards compatibility by defaulting to the original parentdir
+# and using a local output directory otherwise
 if [ -d "/local/var/$USER/pacrr" ]; then
 	parentdir="/local/var/$USER/pacrr"
 else
-	printf "parentdir: "
-	read parentdir
+	# we can't make a /local/ directory without sudo permissions,
+	# and we don't want to use sudo unless we have to.
+	# instead, we will just write to an output directory
+
+	parentdir="./pacrr"
+	[ ! -d "./$parentdir" ] && mkdir $parentdir
 fi
 
 export parentdir
