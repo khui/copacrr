@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Synopsis: evaluates the model using RERANK
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 CUR_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 . $CUR_DIR/set_env
-
-
-# $evalf could be
-# evals.docpairs  evals.rerank  evals.stat_latex  evals.summarize
 
 test_year=wt11
 
