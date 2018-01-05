@@ -3,6 +3,7 @@ import os
 import json
 import pickle
 import h5py
+import subprocess
 import numpy as np
 from collections import Counter
 from keras.callbacks import Callback
@@ -374,16 +375,8 @@ def sample_train_data_weighted(qid_wlen_cwid_mat, qid_cwid_label, \
         yield (train_data, labels)
 
 def dump_modelplot(model, model_file):
-    try:
-        plot_model(model, to_file=model_file + '.pdf',show_shapes=True)
-
-    # we try to include all the model params in the name of the output file
-    # but that sometimes makes the name too long
-    # as a simple solution, we fallback on the much shorter 'model.pdf' if
-    # the original name is too long
-    except IOError:
-        model_file_path = "/".join(model_file.split('/')[:-1]) + '/'
-        plot_model(model, to_file=model_file_path + 'model.pdf',show_shapes=True)
+    print trunc_filepath(model_file)
+    plot_model(model, to_file=trunc_filepath(model_file + '.pdf'),show_shapes=True)
 
 def pred_label(model, input_x, input_cwid, input_qid):
     batch_size = min(len(input_cwid), 256)
@@ -499,3 +492,29 @@ def merge_dicts(a, b):
     merged = a.copy()
     merged.update(b)
     return merged
+
+# On most systems, a filename can only be so long.
+# On Windows, macOS, and Linux, this is 255 chars.
+# We set NAME_MAX to the longest possible filename length
+NAME_MAX = None
+try:
+    # POSIX
+    NAME_MAX = int(subprocess.check_output("getconf NAME_MAX /", shell=True)[:-1])
+except:
+    NAME_MAX = 255
+
+# MAX_PATH is the longest possible filepath length
+PATH_MAX = None
+try:
+    # POSIX
+    PATH_MAX = int(subprocess.check_output("getconf PATH_MAX /", shell=True)[:-1])
+except:
+    from ctypes.wintypes import MAX_PATH
+    PATH_MAX = MAX_PATH
+
+logger.info('PATH_MAX=' + str(PATH_MAX))
+logger.info('NAME_MAX=' + str(NAME_MAX))
+
+trunc_dir = lambda dirname: dirname[:PATH_MAX]
+trunc_file = lambda filename: filename[:NAME_MAX] # does not include path
+trunc_filepath = lambda fp: trunc_dir('/'.join(fp.split('/')[:-1])) + '/' + trunc_file(fp.split('/')[-1])

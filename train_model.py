@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib as mpl
 import sacred
 from sacred.utils import apply_backspaces_and_linefeeds
-from utils.utils import load_train_data_generator, DumpWeight, dump_modelplot
+from utils.utils import load_train_data_generator, DumpWeight, dump_modelplot, trunc_file, trunc_dir
 from utils.year_2_qids import get_train_qids, get_qrelf
 from utils.common_utils import read_qrel, config_logger, SoftFailure
 from utils.ngram_nfilter import get_ngram_nfilter
@@ -80,11 +80,7 @@ def main(_log, _config):
         plt.tick_params('y')
         plt.xlabel('epoches')
         plt.title('loss:%d %.3f'%(argmin_loss_epoch, epoch_train_loss[argmin_loss_epoch]))
-        try:
-            fig.savefig(outdir + name + '_' + plot_id + '.pdf', format='pdf')
-        except IOError:
-            # if the filename is too long to save, shorten it
-            fig.savefig(outdir + name + '_' + 'PACRR' + '.pdf', format='pdf')
+        fig.savefig(trunc_dir(outdir) + trunc_file(name + '_' + plot_id + '.pdf'), format='pdf')
         plt.close()
 
 

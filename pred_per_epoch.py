@@ -1,24 +1,27 @@
-import sys, time, os, importlib
-from utils.year_2_qids import get_train_qids, get_qrelf
-from utils.common_utils import read_qrel, SoftFailure
-from utils.ngram_nfilter import get_ngram_nfilter
-import utils.select_doc_pos
-import numpy as np, matplotlib as mpl
+import os
+import sys
+import tempfile
+import subprocess
+import pickle
+import time
+import importlib
+import sacred
+import numpy as np
+import matplotlib as mpl
 mpl.use('Agg')
 mpl.rcParams.update({'font.size': 10})
 import matplotlib.pyplot as plt
-import pickle
 from keras.utils import plot_model
-import tempfile, subprocess
-
 import keras.backend as K
-K.get_session()
-
-from utils.utils import load_test_data, DumpWeight, dump_modelplot, pred_label
-from utils.config import treceval, perlf, rawdoc_mat_dir, file2name, default_params, qrelfdir
-
-import sacred
+import utils.select_doc_pos
 from sacred.utils import apply_backspaces_and_linefeeds
+from utils.utils import load_test_data, DumpWeight, dump_modelplot, pred_label, trunc_dir
+from utils.config import treceval, perlf, rawdoc_mat_dir, file2name, default_params, qrelfdir
+from utils.year_2_qids import get_train_qids, get_qrelf
+from utils.common_utils import read_qrel, SoftFailure
+from utils.ngram_nfilter import get_ngram_nfilter
+
+K.get_session()
 ex = sacred.Experiment('predict')
 ex.path = 'predict'
 sacred.SETTINGS.HOST_INFO.CAPTURED_ENV.append('CUDA_VISIBLE_DEVICES')
@@ -98,28 +101,15 @@ def pred(_log, _config):
     model = model_cls(model_params, rnd_seed=p['seed'])
     expid = model.params_to_string(model_params)
 
-    outdir_plot='%s/train_%s/%s/predict_per_epoch/test_%s' % (p['parentdir'], p['train_years'],
-                                                              p['expname'], p['test_year'])
-    outdir_run='%s/%s'%(outdir_plot, expid)
-    tmp_dir=os.path.join(outdir_run,'tmp')
-    weight_dir='%s/train_%s/%s/model_weight/%s' % (p['parentdir'], p['train_years'],p['expname'], expid)
-    detail_outdir='%s/train_%s/%s/model_detail/' % (p['parentdir'], p['train_years'], p['expname'])
+    outdir_plot=trunc_dir('%s/train_%s/%s/predict_per_epoch/test_%s' % (p['parentdir'], p['train_years'],
+                                                              p['expname'], p['test_year']))
+    outdir_run=trunc_dir('%s/%s'%(outdir_plot, expid))
+    tmp_dir=trunc_dir(os.path.join(outdir_run,'tmp'))
+    weight_dir=trunc_dir('%s/train_%s/%s/model_weight/%s' % (p['parentdir'], p['train_years'],p['expname'], expid))
+    detail_outdir=trunc_dir('%s/train_%s/%s/model_detail/' % (p['parentdir'], p['train_years'], p['expname']))
 
-    try:
-        os.listdir(outdir_run)
-    except OSError:
-        expid = raw_input('The original expid is longer than your system\'s max filename length. Enter new expid: ')
-        outdir_run='%s/%s'%(outdir_plot, expid)
-        tmp_dir=os.path.join(outdir_run,'tmp')
-        weight_dir='%s/train_%s/%s/model_weight/%s' % (p['parentdir'], p['train_years'],p['expname'], expid)
-
-    if not os.path.isdir(weight_dir):
-        _log.error('No such dir {0}'.format(weight_dir))
-        weight_dir = raw_input('Enter replacement weight_dir: ')
-
-    if not os.path.isdir(detail_outdir):
-        _log.error('No such dir {0}'.format(weight_dir))
-        detail_outdir = raw_input('Enter replacement detail_outdir: ')
+    assert os.path.isdir(weight_dir), "weight_dir " + weight_dir + " does not exist. Make sure you trained the model."
+    assert os.path.isdir(detail_dir), "detail_dir " + detail_dir + " does not exist. Make sure you trained the model."
 
     if len(os.listdir(weight_dir)) < 1:
         raise SoftFailure('weight dir empty')
@@ -128,7 +118,7 @@ def pred(_log, _config):
         if not os.path.isdir(outdir_run):
             os.makedirs(outdir_run)
             os.makedirs(tmp_dir)
-    except OSError as e:
+    except OSError:
         pass
     _log.info('Processing {0}'.format(outdir_run))
     ###################

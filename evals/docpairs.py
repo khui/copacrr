@@ -1,16 +1,23 @@
-import sys, time, os, itertools, importlib, copy
+import os
+import sys
+import copy
+import time
+import itertools
+import importlib
+import sacred
+import numpy as np
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
+import logging
+import warnings
+from pandas import DataFrame as df
+from sacred.utils import apply_backspaces_and_linefeeds
+from utils.utils import NAME_MAX, PATH_MAX
 from utils.common_utils import read_qrel, config_logger
 from utils.config import train_test_years, file2name, qrelfdir
 from utils.eval_utils import read_run, jud_label, label_jud, year_label_jud, get_epoch_from_val, get_model_param
 from utils.year_2_qids import qid_year, year_qids, get_qrelf
-import numpy as np, matplotlib as mpl
-mpl.use('Agg')
-import matplotlib.pyplot as plt
-from pandas import DataFrame as df
-import logging, warnings
-
-import sacred
-from sacred.utils import apply_backspaces_and_linefeeds
 
 ex = sacred.Experiment('metrics')
 ex.path = 'metrics' # name of the experiment
@@ -50,6 +57,7 @@ def eval_docpair_predaccuracy(qid_cwid_score, docpairs, test_year):
     for pkey, docpairs in docpairs[test_year].items():
         for qid, dl, dh in docpairs:
             #TODO why is this necessary?
+            print "qid: " + qid
             if qid not in qid_cwid_score:
                 continue
 
@@ -94,25 +102,29 @@ def main(_log, _config):
             pred_dirs, val_dirs = list(), list()
 
             for expid in expids:
-                if not os.path.isdir('%s/train_%s/%s/predict_per_epoch/test_%s/%s' % (p['parentdir'], train_years, p['expname'], test_year, expid)):
-                    pred_dir = raw_input('Enter pred_dir: ')
+                default_dir = lambda year: '%s/train_%s/%s/predict_per_epoch/test_%s/%s' % \
+                    (p['parentdir'], train_years, p['expname'], year, expid);
 
-                if not os.path.isdir( '%s/train_%s/%s/predict_per_epoch/test_%s/%s' % (p['parentdir'], train_years, p['expname'], val_year , expid)):
-                    val_dir =  raw_input('Enter val_dir or leave blank to use default: ')
+                pred_dir = default_dir(test_year)
+                while not os.path.isdir(pred_dir):
+                    print pred_dir, 'is not a valid pred_dir'
+                    pred_dir = raw_input('Enter new pred_dir: ')
 
-                if not os.path.isdir(pred_dir) or not os.path.isdir(val_dir):
-                    warnings.warn('No such dir {0}/{1}'.format(pred_dir, val_dir), RuntimeWarning)
-                    continue
+                val_dir = default_dir(val_year)
+                while not os.path.isdir(val_dir):
+                    print val_dir, 'is not a valid val_dir'
+                    val_dir =  raw_input('Enter new val_dir: ')
+
                 pred_dirs.append(pred_dir)
                 val_dirs.append(val_dir)
-            output_file='%s/train_%s/%s/evaluations/statdocpair/%s_v-%s_t-%s/%s'%(p['outdir'], train_years,\
-                    p['expname'], '-'.join(train_years.split('_')), val_year[2:], test_year[2:], raw_expid)
 
-            try:
-                if not os.path.isdir(os.path.dirname(output_file)):
-                    os.makedirs(os.path.dirname(output_file))
-            except OSError as e:
-                pass
+            # we want to avoid making the output file too long, so we truncate it to the PATH_MAX
+            output_file_long='%s/train_%s/%s/evaluations/statdocpair/%s_v-%s_t-%s/%s'%(p['outdir'], train_years,\
+                    p['expname'], '-'.join(train_years.split('_')), val_year[2:], test_year[2:], raw_expid)
+            output_file = output_file_long[:PATH_MAX]
+
+            if not os.path.isdir(os.path.dirname(output_file)):
+                os.makedirs(os.path.dirname(output_file))
             _log.info('evaluate {0} on {1} based on val {2} \
                     over docpairs benchmark and output to {3}'.format(expid, test_year, val_year, output_file))
 
@@ -126,12 +138,7 @@ def main(_log, _config):
             qid_cwid_invrank, _, runid = read_run(os.path.join(best_pred_dir, argmax_run))
             pkey_qid_acc = eval_docpair_predaccuracy(qid_cwid_invrank, year_pkey_docpairs, test_year)
 
-
             dftable = df(pkey_qid_acc, index=sorted(list(qid_cwid_invrank.keys()))+[0, -1])
             _log.info('\n' + dftable.to_string())
-            try:
-                dftable.to_csv(output_file + '.csv', float_format='%.3f', header=True, index=True, sep=',', mode='w')
-            except IOError:
-                output_file = raw_input('Original output filename too long. Enter new filename: ')
-                dftable.to_csv(output_file + '.csv', float_format='%.3f', header=True, index=True, sep=',', mode='w')
+            dftable.to_csv(output_file + '.csv', float_format='%.3f', header=True, index=True, sep=',', mode='w')
             _log.info('finished {0} {1} {2} {3}'.format(expid, train_years, val_year, test_year))
