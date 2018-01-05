@@ -131,6 +131,25 @@ python -m evals.docpairs with expname=$expname train_years=$train_years {param_n
 python -m evals.rerank with expname=$expname train_years=$train_years {param_name=param_val}
 ```
 
+## File Structure Overview
+`bin/` contains the binaries and logical binaries which can be executed to train, evaluate, and
+otherwise use the model.
+
+`data/` contains trec web data.
+
+`evals/` contains the scripts which evaluate the model.
+
+`libs/` contains libraries which our code uses and which we didn't write.
+
+`models/` contains the code which defines the PACRR model and its extensions (e.g. RE-, CO-).
+
+`preprocess/` contains various libraries for preprocessing the data. We didn't write this either.
+
+`simmat/` is not included by default in the repository, but the code expects it to exist and contain
+the similarity matrices, so you should put them here.
+
+`utils/` contains various utility functions which we wrote.
+
 ## Citation
 
 If you use the code, please cite the following papers:
