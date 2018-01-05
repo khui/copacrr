@@ -132,8 +132,8 @@ python -m evals.rerank with expname=$expname train_years=$train_years {param_nam
 ```
 
 ## File Structure Overview
-`bin/` contains the binaries and logical binaries which can be executed to train, evaluate, and
-otherwise use the model.
+`bin/` contains the binaries and logical binaries which can be executed to
+train, evaluate, and otherwise use the model.
 
 `data/` contains trec web data.
 
@@ -141,12 +141,23 @@ otherwise use the model.
 
 `libs/` contains libraries which our code uses and which we didn't write.
 
-`models/` contains the code which defines the PACRR model and its extensions (e.g. RE-, CO-).
+`models/` contains the code which defines the PACRR model and its extensions
+(e.g. RE-, CO-).
 
-`preprocess/` contains various libraries for preprocessing the data. We didn't write this either.
+`pacrr/` is not included by default in the repository, but is built when
+training the model. It contains the files which save a PACRR model instance as
+well as misc. information about it, like loss and plots. To change the name of
+the directory, set `$parentdir` in `bin/set_env` to be the new name of the
+directory. Make sure to move the files from the original directory to the new
+one.
 
-`simmat/` is not included by default in the repository, but the code expects it to exist and contain
-the similarity matrices, so you should put them here.
+`preprocess/` contains various libraries for preprocessing the data. We didn't
+write this either.
+
+`simmat/` is not included by default in the repository, but the code expects it
+to exist and contain the similarity matrices, so you should put them here.
+
+`test/` contains testing files.
 
 `utils/` contains various utility functions which we wrote.
 
