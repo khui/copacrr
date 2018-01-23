@@ -37,6 +37,7 @@ export qproximity=0
 export drmmdense=5
 export ut=True
 export ud=True
+export logfile=repaccr.log
 
 # if too many epochs are used, the model will run out of the RAM and crash
 if [ "$expname" = "debug" ]; then

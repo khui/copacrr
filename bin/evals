@@ -45,4 +45,4 @@ run_experiment() {
 		outdir=$outdir
 }
 
-time run_experiment
+time run_experiment 2>&1 | tee $logfile

@@ -21,4 +21,4 @@ time python -m train_model with \
 	shuffle=$shuffle \
 	parentdir=$parentdir \
 	epochs=$epochs \
-	outdir=$outdir
+	outdir=$outdir 2>&1 | tee $logfile

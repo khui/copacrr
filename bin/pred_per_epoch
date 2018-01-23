@@ -23,4 +23,4 @@ time python -m pred_per_epoch with\
 	shuffle=$shuffle \
 	parentdir=$parentdir \
 	epochs=$epochs \
-	outdir=$outdir
+	outdir=$outdir 2>&1 | tee $logfile
