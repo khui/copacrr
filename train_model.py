@@ -1,23 +1,25 @@
-import os, importlib
-import keras.callbacks
+import os
+import importlib
+import pickle
+import logging
+import numpy as np
+import matplotlib as mpl
+import sacred
+from sacred.utils import apply_backspaces_and_linefeeds
+from utils.utils import load_train_data_generator, DumpWeight, dump_modelplot, trunc_file, trunc_dir
 from utils.year_2_qids import get_train_qids, get_qrelf
 from utils.common_utils import read_qrel, config_logger, SoftFailure
 from utils.ngram_nfilter import get_ngram_nfilter
-from utils.utils import load_train_data_generator, DumpWeight, dump_modelplot
-import numpy as np, matplotlib as mpl
-mpl.use('Agg')
-mpl.rcParams.update({'font.size': 10})
-import matplotlib.pyplot as plt
-import pickle, logging
 from utils.config import file2name, default_params, perlf, qrelfdir, rawdoc_mat_dir
 # forces the tensorflow session to be launched immediately
 # it is important when the tf random seed is fixed
 import keras.backend as K
+import keras.callbacks
 K.get_session()
-# import for sacred
-import sacred
-from sacred.utils import apply_backspaces_and_linefeeds
 
+mpl.use('Agg')
+mpl.rcParams.update({'font.size': 10})
+import matplotlib.pyplot as plt # pyplot must be imported after mpl.use is run
 
 # set up the sacred env
 ex = sacred.Experiment('train')
@@ -27,12 +29,10 @@ sacred.SETTINGS.HOST_INFO.CAPTURED_ENV.append('USER')
 ex.captured_out_filter = apply_backspaces_and_linefeeds
 default_params = ex.config(default_params)
 
-
-
 @ex.automain
 def main(_log, _config):
     p = _config
-    
+
     modelname = file2name[p['modelfn']]
     mod_model = importlib.import_module('models.%s' % p['modelfn'])
     # load the model to be employed, say from models/pacrr.py
@@ -41,15 +41,16 @@ def main(_log, _config):
     model = model_cls(model_params, rnd_seed=p['seed'])
     # create a expid based on the configured parameters
     expid = model.params_to_string(model_params)
-   
-    # the model files 
+
+    # the model files
     outdir='%s/train_%s/%s/model_weight/%s'%(p['parentdir'], p['train_years'], p['expname'], expid)
     # the plots for the model, the training loss etc..
     detail_outdir='%s/train_%s/%s/model_detail/'%(p['parentdir'], p['train_years'], p['expname'])
 
     if not os.path.isdir(detail_outdir + 'outs'):
+        print(detail_outdir + 'outs')
         os.makedirs(detail_outdir + 'outs')
-    
+
     _log.info('Input parameters: {0}'.format(p))
     label2tlabel={4:2,3:2,2:2,1:1,0:0,-2:0}
     sample_label_prob=dict()
@@ -79,7 +80,7 @@ def main(_log, _config):
         plt.tick_params('y')
         plt.xlabel('epoches')
         plt.title('loss:%d %.3f'%(argmin_loss_epoch, epoch_train_loss[argmin_loss_epoch]))
-        fig.savefig(outdir + '/' + name + '_' + plot_id + '.pdf', format='pdf')
+        fig.savefig(trunc_dir(outdir) + trunc_file(name + '_' + plot_id + '.pdf'), format='pdf')
         plt.close()
 
 
@@ -93,7 +94,7 @@ def main(_log, _config):
 
     # keras 2 steps per epoch is number of batches per epoch, not number of samples per epoch
     steps_per_epoch = np.int(p['nsamples'] / p['batch'])
-    
+
     # the generator for training data
     train_data_generator=\
             load_train_data_generator(qids, rawdoc_mat_dir, qid_cwid_label, N_GRAMS, p,\

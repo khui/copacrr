@@ -1,12 +1,15 @@
+import logging
+import os
+import json
+import pickle
+import h5py
+import subprocess
 import numpy as np
 from collections import Counter
-import logging
-import os, json, pickle, h5py
 from keras.callbacks import Callback
-from . import select_doc_pos
 from keras.utils import plot_model
-from utils.config import contextdir
-
+from . import select_doc_pos
+from .config import contextdir
 
 logger = logging.getLogger('pacrr')
 
@@ -17,10 +20,18 @@ class DumpWeight(Callback):
 
     def on_epoch_end(self, epoch, logs={}):
         loss = logs['loss']
-        weight_name = '%d_%d_%d_%d.h5'%\
-        (epoch, int(loss*10000), self.batch_size, self.nb_sample)
+        weight_name = '%d_%d_%d_%d.h5' % \
+            (epoch, int(loss*10000), self.batch_size, self.nb_sample)
         if not os.path.isdir(self.weight_dir):
-            os.makedirs(self.weight_dir)
+            try:
+                os.makedirs(self.weight_dir)
+            except (IOError, OSError):
+                # sometimes, the dirname is too long, so we have to shorten it
+                # we add a random number at the end to avoid replacing a previous file
+                model_id = raw_input('Original model ID too long to save to system. Enter new model ID: ')
+                self.weight_dir = '/'.join(self.weight_dir.split('/')[:-1]) + '/' + model_id
+                os.makedirs(self.weight_dir)
+
         weight_file=self.weight_dir + '/' + weight_name
         self.model.save_weights(weight_file)
         logger.info('Callback dumped %s'%weight_name)
@@ -34,7 +45,7 @@ def _load_doc_mat_desc(qids, qid_cwid_label, doc_mat_dir, qid_topic_idf, qid_des
     if h5fn is not None:
         if os.path.isfile(h5fn):
             h5 = h5py.File(h5fn, 'r', libver='latest')
-    
+
     qid_cwid_simmat = dict()
     qid_term_idf = dict()
     for qid in sorted(qids):
@@ -62,15 +73,15 @@ def _load_doc_mat_desc(qids, qid_cwid_label, doc_mat_dir, qid_topic_idf, qid_des
         if h5 is not None:
             docmap_d = json.loads(h5['/desc/%s' % qid].attrs['docmap'])
             docmap_t = json.loads(h5['/topic/%s' % qid].attrs['docmap'])
-        
+
         for cwid in qid_cwid_label[qid]:
             topic_cwid_f = doc_mat_dir + '/topic_doc_mat/%d/%s.npy'%(qid, cwid)
             desc_cwid_f = doc_mat_dir + '/desc_doc_mat/%d/%s.npy'%(qid, cwid)
             topic_mat, desc_mat = np.empty((0,0), dtype=np.float32), np.empty((0,0), dtype=np.float32)
             if h5 is not None and cwid not in docmap_t:
-                logger.error('topic %s not exist.'%cwid)
+                logger.warning('topic %s does not exist.'%cwid)
             elif h5 is None and not os.path.isfile(topic_cwid_f):
-                logger.error('%s not exist.'%topic_cwid_f)
+                logger.warning('%s does not exist.'%topic_cwid_f)
             elif usetopic:
                 if h5 is None:
                     topic_mat = np.load(topic_cwid_f)
@@ -80,9 +91,9 @@ def _load_doc_mat_desc(qids, qid_cwid_label, doc_mat_dir, qid_topic_idf, qid_des
                     logger.warning('topic_mat {0} {1} {2}'.format(qid, cwid, topic_mat.shape))
                     continue
             if h5 is not None and cwid not in docmap_d:
-                logger.error('desc %s not exist.'%cwid)
+                logger.warning('desc %s does not exist.'%cwid)
             elif h5 is None and not os.path.isfile(desc_cwid_f):
-                logger.error('%s not exist.'%desc_cwid_f)
+                logger.warning('%s does not exist.'%desc_cwid_f)
             elif usedesc:
                 if h5 is None:
                     desc_mat = np.load(desc_cwid_f)[didxs]
@@ -108,11 +119,11 @@ def _load_doc_mat_desc(qids, qid_cwid_label, doc_mat_dir, qid_topic_idf, qid_des
                 qid_cwid_simmat[qid][cwid] = np.concatenate(m, axis=0).astype(np.float32)
 
             else:
-                logger.error('dimension mismatch {0} {1} {2} {3}'.format(qid, cwid, topic_mat.shape, desc_mat.shape))
+                logger.warning('dimension mismatch {0} {1} {2} {3}'.format(qid, cwid, topic_mat.shape, desc_mat.shape))
 
     if h5 is not None:
         h5.close()
-        
+
     return qid_cwid_simmat, qid_term_idf
 
 def load_query_idf(qids, doc_mat_dir):
@@ -163,7 +174,7 @@ def convert_cwid_udim_simmat(qids, qid_cwid_rmat, select_pos_func, \
                 if len_doc > dim_sim:
                     rmat = np.pad(qid_cwid_rmat[qid][cwid],  pad_width=((0,max_query_term-len_query),(0, 1)), mode='constant', constant_values=pad_value).astype(np.float32)
                     selected_inds = select_pos_func(qid_cwid_rmat[qid][cwid], dim_sim, n_gram)
-                    
+
                     if qid_cwid_qermat is None:
                         qid_cwid_mat[qid][n_gram][cwid] = (rmat[:, selected_inds])
                     else:
@@ -256,7 +267,7 @@ def sample_train_data_weighted(qid_wlen_cwid_mat, qid_cwid_label, \
             if l not in label_count:
                 label_count[l] = 0
             label_count[l] += 1
-       
+
     if len(sample_label_prob) == 0:
         total_count = sum([label_count[l] for l in label_count if l > 0])
         sample_label_prob = {l:label_count[l]/float(total_count) for l in label_count if l > 0}
@@ -289,7 +300,7 @@ def sample_train_data_weighted(qid_wlen_cwid_mat, qid_cwid_label, \
             selected_qids = np.random.choice(sample_qids, \
                     size=nl_selected, replace=True, p=sample_label_qid_prob[label])
             qid_counter = Counter(selected_qids)
-            for qid in qid_counter: 
+            for qid in qid_counter:
                 pos_label = 0
                 nq_selected = qid_counter[qid]
                 if nq_selected == 0:
@@ -341,7 +352,7 @@ def sample_train_data_weighted(qid_wlen_cwid_mat, qid_cwid_label, \
         labels = np.array(ys)[shuffled_index]
 
         getmat = lambda x: np.array(x)
-        
+
         for wlen in pos_batch:
             train_data['pos_wlen_%d'%wlen] = getmat(pos_batch[wlen])[shuffled_index,:]
             for neg_ind in range(NUM_NEG):
@@ -351,7 +362,7 @@ def sample_train_data_weighted(qid_wlen_cwid_mat, qid_cwid_label, \
             for k in train_data:
                 assert k.find("_wlen_") != -1, "data contains non-simmat objects"
                 train_data[k] = (train_data[k] >= 0.999).astype(np.int8)
-                    
+
         if context:
             train_data['pos_context'] = np.array(pos_context_batch)[shuffled_index]
             for neg_ind in range(NUM_NEG):
@@ -364,8 +375,8 @@ def sample_train_data_weighted(qid_wlen_cwid_mat, qid_cwid_label, \
         yield (train_data, labels)
 
 def dump_modelplot(model, model_file):
-    plot_model(model, to_file=model_file + '.pdf',show_shapes=True)
-
+    print trunc_filepath(model_file)
+    plot_model(model, to_file=trunc_filepath(model_file + '.pdf'),show_shapes=True)
 
 def pred_label(model, input_x, input_cwid, input_qid):
     batch_size = min(len(input_cwid), 256)
@@ -376,21 +387,21 @@ def pred_label(model, input_x, input_cwid, input_qid):
             qid_cwid_pred[qid] = dict()
         qid_cwid_pred[qid][cwid] = pred
     return qid_cwid_pred
-        
+
 
 
 def load_test_data(qids, rawdoc_mat_dir, qid_cwid_label, N_GRAMS, param_val):
     POS_METHOD = param_val['distill']
     SIM_DIM = param_val['simdim']
     NUM_NEG = param_val['numneg']
-    MAX_QUERY_LENGTH = param_val['maxqlen'] 
+    MAX_QUERY_LENGTH = param_val['maxqlen']
     binarysimm = param_val['binmat']
     CONTEXT = param_val['context']
     if POS_METHOD == 'firstk':
         mat_ngrams = [max(N_GRAMS)]
     else:
         mat_ngrams = N_GRAMS
-    
+
     select_pos_func = getattr(select_doc_pos, 'select_pos_%s'%POS_METHOD)
     qid_topic_idf, qid_desc_idf = load_query_idf(qids, rawdoc_mat_dir)
     qid_cwid_rmat, qid_term_idf = _load_doc_mat_desc(qids, qid_cwid_label, rawdoc_mat_dir, qid_topic_idf, \
@@ -421,10 +432,10 @@ def load_test_data(qids, rawdoc_mat_dir, qid_cwid_label, N_GRAMS, param_val):
                     q_idfs.append(qid_ext_idfarr[qid].reshape((1, qid_ext_idfarr[qid].shape[0],1)))
                     if CONTEXT:
                         contexts.append(qid_context[qid][cwid])
-                doc_vec[wlen].append(qid_cwid_mat[qid][wlen][cwid]) 
+                doc_vec[wlen].append(qid_cwid_mat[qid][wlen][cwid])
 
     getmat = lambda x: np.array(x)
-        
+
     test_data = {'doc_wlen_%d'%wlen: np.array(getmat(doc_vec[wlen])) for wlen in doc_vec}
 
     if binarysimm:
@@ -435,7 +446,7 @@ def load_test_data(qids, rawdoc_mat_dir, qid_cwid_label, N_GRAMS, param_val):
     q_idfs = np.concatenate(q_idfs, axis=0)
     logger.info('Test data: {0} {1} {2}'.format([(wlen, getmat(doc_vec[wlen]).shape) for wlen in doc_vec], q_idfs.shape, len(cwids)))
     test_data['query_idf']=q_idfs
-    
+
     if CONTEXT:
         test_data['doc_context'] = np.array(contexts)
     return test_data, cwids, testqids
@@ -445,7 +456,7 @@ def load_train_data_generator(qids, rawdoc_mat_dir, qid_cwid_label, N_GRAMS, par
     POS_METHOD = param_val['distill']
     SIM_DIM = param_val['simdim']
     NUM_NEG = param_val['numneg']
-    MAX_QUERY_LENGTH = param_val['maxqlen'] 
+    MAX_QUERY_LENGTH = param_val['maxqlen']
     binarysimm = param_val['binmat']
     CONTEXT = param_val['context']
     n_batch = param_val['batch']
@@ -461,7 +472,7 @@ def load_train_data_generator(qids, rawdoc_mat_dir, qid_cwid_label, N_GRAMS, par
         contextdir = os.path.join(contextdir, 'win_%s' % param_val['cw'])
         if not os.path.exists(contextdir):
             raise RuntimeError("missing dir for cw=%s: %s" % (param_val['cw'], contextdir))
-    
+
     select_pos_func = getattr(select_doc_pos, 'select_pos_%s'%POS_METHOD)
     qid_topic_idf, qid_desc_idf = load_query_idf(qids, rawdoc_mat_dir)
     qid_cwid_rmat, qid_term_idf = _load_doc_mat_desc(qids, qid_cwid_label, rawdoc_mat_dir, qid_topic_idf, qid_desc_idf, usetopic=param_val['ut'], usedesc=param_val['ud'], maxqlen=MAX_QUERY_LENGTH)
@@ -476,4 +487,34 @@ def load_train_data_generator(qids, rawdoc_mat_dir, qid_cwid_label, N_GRAMS, par
             n_dims = SIM_DIM, n_batch=n_batch, random_shuffle=True, random_seed=rnd_seed, qid_context=qid_context)
     return train_data_generator
 
+# XXX: values from b replace those from a
+def merge_dicts(a, b):
+    merged = a.copy()
+    merged.update(b)
+    return merged
 
+# On most systems, a filename can only be so long.
+# On Windows, macOS, and Linux, this is 255 chars.
+# We set NAME_MAX to the longest possible filename length
+NAME_MAX = None
+try:
+    # POSIX
+    NAME_MAX = int(subprocess.check_output("getconf NAME_MAX /", shell=True)[:-1])
+except:
+    NAME_MAX = 255
+
+# MAX_PATH is the longest possible filepath length
+PATH_MAX = None
+try:
+    # POSIX
+    PATH_MAX = int(subprocess.check_output("getconf PATH_MAX /", shell=True)[:-1])
+except:
+    from ctypes.wintypes import MAX_PATH
+    PATH_MAX = MAX_PATH
+
+logger.info('PATH_MAX=' + str(PATH_MAX))
+logger.info('NAME_MAX=' + str(NAME_MAX))
+
+trunc_dir = lambda dirname: dirname[:PATH_MAX]
+trunc_file = lambda filename: filename[:NAME_MAX] # does not include path
+trunc_filepath = lambda fp: trunc_dir('/'.join(fp.split('/')[:-1])) + '/' + trunc_file(fp.split('/')[-1])

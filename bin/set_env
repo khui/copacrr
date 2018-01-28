@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Synopsis: defines the default params used in the model
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+CUR_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# place all environment variables here and nowhere else
+export CUDA_VISIBLE_DEVICES=0
+export PATH="$PATH:/home/$USER/workspace/pyenv/anaconda3TFCPU/bin"
+export LD_LIBRARY_PATH="/home/$USER/workspace/pyenv/cuDNN/cuda/lib64"
+
+# define the default model parameters
+export expname=debug # used to set $epochs
+export modelfn=pacrr
+export train_years=wt09_10_11_12
+export test_year=wt13
+export seed=7541
+export simdim=800
+export binmat=False
+export numneg=6 # setting this too low immediately crashes the model
+export batch=16
+export nsamples=2048
+export maxqlen=16
+export distill=firstk
+export nfilter=32
+export winlen=3
+export kmaxpool=3
+export combine=16
+export context=False
+export shuffle=False
+export ek=10
+export xfilters=""
+export cascade=""
+export qproximity=0
+export drmmdense=5
+export ut=True
+export ud=True
+export logfile=repaccr.log
+
+# if too many epochs are used, the model will run out of the RAM and crash
+if [ "$expname" = "debug" ]; then
+	export epochs=5
+else
+	export epochs=150
+fi
+
+# maintain backwards compatibility by defaulting to the original parentdir
+# and using a local output directory otherwise
+if [ -d "/local/var/$USER/pacrr" ]; then
+	parentdir="/local/var/$USER/pacrr"
+else
+	# we can't make a /local/ directory without sudo permissions,
+	# and we don't want to use sudo unless we have to.
+	# instead, we will just write to an output directory
+
+	parentdir="./pacrr"
+	[ ! -d "./$parentdir" ] && mkdir $parentdir
+fi
+
+export parentdir
+export outdir=$parentdir
+
+# autodetect a simmat directory
+if [ -d "$CUR_DIR/../simmat" ]; then
+	sim_dir="$CUR_DIR/../simmat"
+else
+	printf "Directory of the similarity matrices: "
+	read sim_dir
+fi
+export sim_dir

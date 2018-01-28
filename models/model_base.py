@@ -1,10 +1,13 @@
+from os import environ as env
+import tensorflow as tf
+from keras import backend
 from keras.models import Sequential, Model
+from keras.layers import Activation, Permute, Dense, Dropout, Embedding, \
+        Flatten, Input, merge, Lambda, Reshape
 from keras.layers.convolutional import Conv2D
 from keras.layers.pooling import MaxPooling2D
-from keras.layers import Activation, Permute, Dense, Dropout, Embedding, \
-Flatten, Input, merge, Lambda, Reshape
-from keras import backend
-import tensorflow as tf
+from utils.utils import merge_dicts
+
 backend.clear_session()
 
 from utils.config import file2name, name2file
@@ -12,13 +15,13 @@ from utils.config import file2name, name2file
 _boolstr = lambda x: x.lower() == 'true'
 _nonestr = lambda x: None if x == 'None' else x
 param_types = {'distill': str, 'xfilters': str, 'cascade': str,
-               'context': _boolstr, 'binmat': _boolstr, 'shuffle': _boolstr,
-               'ut': _boolstr, 'ud': _boolstr, 'enhance': _nonestr}
+        'context': _boolstr, 'binmat': _boolstr, 'shuffle': _boolstr,
+        'ut': _boolstr, 'ud': _boolstr, 'enhance': _nonestr}
 
 
-class MODEL_BASE:
+class MODEL_BASE(object):
     #TODO dont print some of the opts when they match default value? eg maxqlen,epochs,nsamples
-    #TODO epochs and nsamples could be moved to pipeline params, if that makes sense
+
     common_params = ['simdim', 'epochs', 'nsamples', 'maxqlen', 'binmat', 'numneg', 'batch', 'ud', 'ut']
 
     def params_to_string(self, params, skip_check=False):
@@ -27,7 +30,7 @@ class MODEL_BASE:
         # force cascade's type because some values are ambiguous
         if 'cascade' in params:
             params['cascade'] = str(params['cascade'])
-        
+
         for k in self.params:
             # don't include ut/ud when true (hack to prevent previous expnames from changing)
             if (k == "ut" or k == "ud") and params[k]:
@@ -79,10 +82,10 @@ class MODEL_BASE:
         return out
 
     def __init__(self, p, rnd_seed):
-        self.p = p
+        self.p = p # model parameters
         self.rnd_seed = rnd_seed
 
-        #TODO fix seeding. I think this can be done by moving set_random_seed to before Keras is impiorted
+        #TODO fix seeding. I think this can be done by moving set_random_seed to before Keras is imported
         # https://github.com/fchollet/keras/issues/2280
         # if len(tf.get_default_graph()._nodes_by_id.keys()) > 0:
         #     raise RuntimeError("Seeding is not supported after building part of the graph. "
@@ -90,7 +93,7 @@ class MODEL_BASE:
         # tf.set_random_seed(self.rnd_seed)
         # sess = tf.Session()
         # backend.set_session(sess)
-    
+
     def pos_softmax(self, pos_neg_scores):
         exp_pos_neg_scores = [tf.exp(s) for s in pos_neg_scores]
         denominator = tf.add_n(exp_pos_neg_scores)
@@ -107,7 +110,7 @@ class MODEL_BASE:
         shape = tf.shape(x)
         mg = tf.meshgrid(*[tf.range(d) for d in (tf.unstack(shape[:(x.get_shape().ndims - 1)]) + [top_k])], indexing='ij')
         val_contexts = tf.gather_nd(context_input, tf.stack(mg[:-1] + [idxs], axis=-1))
-    
+
     def _multi_kmax_concat(self, x, top_k, poses):
         slice_mats=list()
         for p in poses:
@@ -147,28 +150,59 @@ class MODEL_BASE:
             if selecter in ['strides']:
                 subsample_docdim = n_doc
             dim_name = self._get_dim_name(n_query,n_doc)
-            cov_sim_layers[dim_name] = \
-            Conv2D(n_filter, kernel_size=(n_query, n_doc), strides=(1, subsample_docdim), padding="same", use_bias=True,\
-                    name='cov_doc_%s'%dim_name, kernel_initializer='glorot_uniform', activation='relu', \
-                    bias_constraint=None, kernel_constraint=None, data_format=None, bias_regularizer=None,
-                    activity_regularizer=None, weights=None, kernel_regularizer=None)
 
-            pool_sdim_layer[dim_name] = Lambda(lambda x: self._multi_kmax_concat(x, top_k, poses), \
-                    name='ng_max_pool_%s_top%d_pos%d'%(dim_name, top_k, len(poses)))
-            pool_sdim_layer_context[dim_name] = \
-                    Lambda(lambda x: self._multi_kmax_context_concat(x, top_k, poses), \
-                    name='ng_max_pool_%s_top%d__pos%d_context'%(dim_name, top_k, len(poses))) 
+            # because the layer have so many options, it is cleaner
+            # to just define dictionaries which set their properties
+            cov_args = {
+                    "kernel_size": (n_query, n_doc),
+                    "strides": (1, subsample_docdim),
+                    "padding": "same",
+                    "use_bias": True,
+                    "name": 'cov_doc_%s'%dim_name,
+                    "kernel_initializer": 'glorot_uniform',
+                    "activation": 'relu',
+                    "bias_constraint": None,
+                    "kernel_constraint": None,
+                    "data_format": None,
+                    "bias_regularizer": None,
+                    "activity_regularizer": None,
+                    "weights": None,
+                    "kernel_regularizer": None
+                    }
+            pool_sdim_layer_args = {
+                    "function": lambda x: self._multi_kmax_concat(x, top_k, poses),
+                    "name": 'ng_max_pool_%s_top%d_pos%d' % (dim_name, top_k, len(poses))
+                    }
+            pool_sdim_layer_context_args = {
+                    'function': lambda x: self._multi_kmax_context_concat(x, top_k, poses),
+                    "name": 'ng_max_pool_%s_top%d__pos%d_context'%(dim_name, top_k, len(poses))
+                    }
+            pool_filter_layer_args = {
+                    "pool_size": (1, n_filter),
+                    "strides": None,
+                    "padding": 'valid',
+                    "data_format": None,
+                    "name":
+                    'max_over_filter_doc_%s'%dim_name,
+                    "pool_size": (1, n_filter),
+                    "strides": None,
+                    "padding": 'valid',
+                    "data_format": None,
+                    "name": 'max_over_filter_doc_%s'%dim_name
+                    }
+
+            cov_sim_layers[dim_name] = Conv2D(n_filter, **cov_args)
+            pool_sdim_layer[dim_name] = Lambda(**pool_sdim_layer_args)
+            pool_sdim_layer_context[dim_name] = Lambda(pool_sdim_layer_context_args)
             re_ql_ds[dim_name] = Lambda(lambda t:backend.squeeze(t,axis=2), name='re_ql_ds_%s'%(dim_name))
-            pool_filter_layer[dim_name] = \
-                    MaxPooling2D(pool_size=(1, n_filter), strides=None, padding='valid', data_format=None, \
-                    name='max_over_filter_doc_%s'%dim_name)
+            pool_filter_layer[dim_name] = MaxPooling2D(**pool_filter_layer_args)
 
-        ex_filter_layer = Permute((1, 3, 2), input_shape=(len_query, 1, n_filter), name='permute_filter_lenquery') 
+        ex_filter_layer = Permute((1, 3, 2), input_shape=(len_query, 1, n_filter), name='permute_filter_lenquery')
         return re_input, cov_sim_layers, pool_sdim_layer, pool_sdim_layer_context, pool_filter_layer, ex_filter_layer, re_ql_ds
 
     def dump_weights(self, weight_file):
         self.model.save_weights(weight_file)
-        
+
     def build_from_dump(self, weight_file):
         self.build_predict()
         self.model.load_weights(weight_file)

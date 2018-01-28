@@ -1,24 +1,27 @@
-import sys, time, os, importlib
-from utils.year_2_qids import get_train_qids, get_qrelf
-from utils.common_utils import read_qrel, SoftFailure
-from utils.ngram_nfilter import get_ngram_nfilter
-import utils.select_doc_pos
-import numpy as np, matplotlib as mpl
+import os
+import sys
+import tempfile
+import subprocess
+import pickle
+import time
+import importlib
+import sacred
+import numpy as np
+import matplotlib as mpl
 mpl.use('Agg')
 mpl.rcParams.update({'font.size': 10})
 import matplotlib.pyplot as plt
-import pickle
 from keras.utils import plot_model
-import tempfile, subprocess
-
 import keras.backend as K
-K.get_session()
-
-from utils.utils import load_test_data, DumpWeight, dump_modelplot, pred_label
-from utils.config import treceval, perlf, rawdoc_mat_dir, file2name, default_params, qrelfdir
-
-import sacred
+import utils.select_doc_pos
 from sacred.utils import apply_backspaces_and_linefeeds
+from utils.utils import load_test_data, DumpWeight, dump_modelplot, pred_label, trunc_dir
+from utils.config import treceval, perlf, rawdoc_mat_dir, file2name, default_params, qrelfdir
+from utils.year_2_qids import get_train_qids, get_qrelf
+from utils.common_utils import read_qrel, SoftFailure
+from utils.ngram_nfilter import get_ngram_nfilter
+
+K.get_session()
 ex = sacred.Experiment('predict')
 ex.path = 'predict'
 sacred.SETTINGS.HOST_INFO.CAPTURED_ENV.append('CUDA_VISIBLE_DEVICES')
@@ -53,14 +56,14 @@ def plot_curve(epoch_err_ndcg_loss, outdir, plot_id, p):
     plt.close()
 
 
-def eval_run(_log, qid_cwid_pred, expid, perlf, treceval, tmp_dir, k, qrelf):		
+def eval_run(_log, qid_cwid_pred, expid, perlf, treceval, tmp_dir, k, qrelf):
     with tempfile.NamedTemporaryFile(mode='w', delete=True, dir=tmp_dir) as tmpf,\
             open(os.path.join(tmp_dir, 'tmperr.f'),'a+') as errf:
         for qid in sorted(qid_cwid_pred):
             rank = 1
             for cwid in sorted(qid_cwid_pred[qid], key=lambda d:-qid_cwid_pred[qid][d]):
                 tmpf.write('%d Q0 %s %d %.10e %s\n'%(qid, cwid, rank, qid_cwid_pred[qid][cwid], expid))
-                rank += 1 
+                rank += 1
         tmpf.flush()
         run2eval = tmpf.name
         try:
@@ -98,16 +101,15 @@ def pred(_log, _config):
     model = model_cls(model_params, rnd_seed=p['seed'])
     expid = model.params_to_string(model_params)
 
-    outdir_plot='%s/train_%s/%s/predict_per_epoch/test_%s' % (p['parentdir'], p['train_years'],
-                                                              p['expname'], p['test_year'])
-    outdir_run='%s/%s'%(outdir_plot, expid)
-    tmp_dir=os.path.join(outdir_run,'tmp')
-    weight_dir='%s/train_%s/%s/model_weight/%s' % (p['parentdir'], p['train_years'],p['expname'], expid)
-    detail_outdir='%s/train_%s/%s/model_detail/' % (p['parentdir'], p['train_years'], p['expname'])
+    outdir_plot=trunc_dir('%s/train_%s/%s/predict_per_epoch/test_%s' % (p['parentdir'], p['train_years'],
+                                                              p['expname'], p['test_year']))
+    outdir_run=trunc_dir('%s/%s'%(outdir_plot, expid))
+    tmp_dir=trunc_dir(os.path.join(outdir_run,'tmp'))
+    weight_dir=trunc_dir('%s/train_%s/%s/model_weight/%s' % (p['parentdir'], p['train_years'],p['expname'], expid))
+    detail_outdir=trunc_dir('%s/train_%s/%s/model_detail/' % (p['parentdir'], p['train_years'], p['expname']))
 
-    if not os.path.isdir(weight_dir):
-        _log.error('No such dir {0}'.format(weight_dir))
-        raise SoftFailure('No such dir {0}'.format(weight_dir))
+    assert os.path.isdir(weight_dir), "weight_dir " + weight_dir + " does not exist. Make sure you trained the model."
+    assert os.path.isdir(detail_dir), "detail_dir " + detail_dir + " does not exist. Make sure you trained the model."
 
     if len(os.listdir(weight_dir)) < 1:
         raise SoftFailure('weight dir empty')
@@ -116,7 +118,7 @@ def pred(_log, _config):
         if not os.path.isdir(outdir_run):
             os.makedirs(outdir_run)
             os.makedirs(tmp_dir)
-    except OSError as e:
+    except OSError:
         pass
     _log.info('Processing {0}'.format(outdir_run))
     ###################
@@ -156,7 +158,7 @@ def pred(_log, _config):
         if fn.endswith(".run"):
             fields = fn[:-4].split("_") # trim .run
             assert len(fields) == 5
-            
+
             epoch, loss = int(fields[0]), int(fields[4])
             ndcg, mapv, err = float(fields[1]), float(fields[2]), float(fields[3])
 
@@ -164,7 +166,7 @@ def pred(_log, _config):
             if epoch in finished_epochs:
                 _log.error("TODO two weights exist for same epoch")
             finished_epochs[epoch] = (epoch, err, ndcg, mapv, loss)
-                            
+
     _log.info('skipping finished epochs: {0}'.format(finished_epochs))
 
     def model_pred(NGRAM_NFILTER, weight_file, test_data, test_docids, test_qids):

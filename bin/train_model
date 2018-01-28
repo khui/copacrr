@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Synopsis: trains the model
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+CUR_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+. $CUR_DIR/set_env
+
+time python -m train_model with \
+	expname=$expname \
+	train_years=$train_years \
+	test_year=$test_year \
+	numneg=$numneg \
+	batch=$batch \
+	winlen=$winlen \
+	kmaxpool=$kmaxpool \
+	binmat=$binmat \
+	context=$context \
+	combine=$combine \
+	shuffle=$shuffle \
+	parentdir=$parentdir \
+	epochs=$epochs \
+	outdir=$outdir 2>&1 | tee $logfile
