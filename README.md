@@ -1,4 +1,4 @@
-# (RE-)PACRR Neural IR models 
+# (CO)PACRR Neural IR models 
 
 This is a Keras (TensorFlow) implementation of the model described in:
 
@@ -7,8 +7,8 @@ Kai Hui, Andrew Yates, Klaus Berberich, Gerard de Melo.
 *In EMNLP, 2017.*
 
 Kai Hui, Andrew Yates, Klaus Berberich, Gerard de Melo.
-[RE-PACRR: A Context and Density-Aware Neural Information Retrieval Model](https://arxiv.org/pdf/1706.10192.pdf).
-*In Neu-IR workshop, 2017.*
+[Co-PACRR: A Context-Aware Neural IR Model for Ad-hoc Retrieval](https://arxiv.org/pdf/1706.10192.pdf).
+*In WSDM, 2018.*
 
 
 ## Contact
@@ -124,14 +124,17 @@ If you use the code, please cite the following papers:
 }
 ```
 
-### RE-PACRR
+### CO-PACRR
 ```
-@inproceedings{hui2017re,
-  title={RE-PACRR: A Context and Density-Aware Neural Information Retrieval Model},
+@inproceedings{hui2018co,
+  title={Co-PACRR: A Context-Aware Neural IR Model for Ad-hoc Retrieval},
   author={Hui, Kai and Yates, Andrew and Berberich, Klaus and de Melo, Gerard},
-  booktitle={The SIGIR 2017 Workshop on Neural Information Retrieval},
-  year={2017}
+  booktitle={Proceedings of Web Search and Data Mining 2018},
+  year={2018},
+  location={Los Angeles, CA USA},
+  publisher={ACM},
 }
+
 ```
 
 
