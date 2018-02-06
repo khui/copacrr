@@ -1,4 +1,4 @@
-# (CO)PACRR Neural IR models 
+# (CO-)PACRR Neural IR models 
 
 This is a Keras (TensorFlow) implementation of the model described in:
 
