@@ -131,8 +131,7 @@ If you use the code, please cite the following papers:
   author={Hui, Kai and Yates, Andrew and Berberich, Klaus and de Melo, Gerard},
   booktitle={Proceedings of Web Search and Data Mining 2018},
   year={2018},
-  location={Los Angeles, CA USA},
-  publisher={ACM},
+  location={Los Angeles, CA USA}
 }
 
 ```
